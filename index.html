@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6920 Miramar Road — Leasing Dashboard</title>
+<style>
+  :root{
+    --surface-1:#F7F6F3;
+    --surface-2:#F0EEE9;
+    --surface-3:#FFFFFF;
+    --border:#E3E1DB;
+    --border-strong:#D7D4CC;
+    --border-stronger:#8A8880;
+    --text-primary:#2B2A27;
+    --text-secondary:#6B6862;
+    --text-accent:#2E6FD9;
+    --occ-fill:rgba(99,153,34,0.30);
+    --occ-stroke:#3B6D11;
+    --occ-text:#27500A;
+    --vac-fill:rgba(196,68,54,0.24);
+    --vac-stroke:#A23B2E;
+    --other-fill:rgba(138,136,128,0.22);
+    --other-stroke:#6B6862;
+    --selected-fill:#5A5750;
+    --selected-stroke:#2B2A27;
+    --vac-text:#8C2E22;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0;
+    background:#FAFAF8;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--text-primary);
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:24px 20px 80px; }
+  header.top{ margin-bottom:20px; }
+  header.top h1{ font-size:22px; font-weight:700; margin:0 0 4px; }
+  header.top p{ font-size:13px; color:var(--text-secondary); margin:0; }
+
+  .stats{ display:flex; gap:12px; flex-wrap:wrap; margin:18px 0 28px; }
+  .stat-card{
+    flex:1; min-width:130px;
+    background:var(--surface-3); border:1px solid var(--border);
+    border-radius:12px; padding:14px 16px;
+  }
+  .stat-card .num{ font-size:24px; font-weight:700; line-height:1.1; }
+  .stat-card .lbl{ font-size:12px; color:var(--text-secondary); margin-top:2px; }
+  .stat-card.occ .num{ color:var(--occ-text); }
+  .stat-card.vac .num{ color:var(--vac-text); }
+
+  .legend{ display:flex; gap:18px; align-items:center; font-size:12.5px; color:var(--text-secondary); margin-bottom:6px; }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .swatch.occ{ background:var(--occ-fill); border:1px solid var(--occ-stroke); }
+  .swatch.vac{ background:var(--vac-fill); border:1px solid var(--vac-stroke); }
+
+  .floors-scroll{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:22px;
+  }
+  section.floor{
+    background:var(--surface-3); border:1px solid var(--border); border-radius:14px;
+    padding:16px 16px 8px; width:100%; min-width:0;
+  }
+  section.floor h2{ font-size:15px; font-weight:700; margin:2px 4px 10px; }
+  section.floor svg{ display:block; height:620px; width:100%; }
+  .box{ stroke:var(--border-strong); }
+  .t{ fill:var(--text-primary); font-size:11px; font-weight:600; font-family:inherit; pointer-events:none; }
+  svg .unit{ cursor:pointer; transition:filter .12s ease; }
+  svg .unit:hover{ filter:brightness(0.94); }
+  svg .unit.selected-ring{ stroke:#2E6FD9 !important; stroke-width:2.5 !important; }
+
+  #detail-panel{
+    position:sticky; top:10px; z-index:5;
+    background:var(--surface-3); border:1px solid var(--border-strong); border-radius:14px;
+    padding:16px 18px; margin:0 0 20px; box-shadow:0 4px 18px rgba(0,0,0,0.06);
+    font-size:13.5px;
+  }
+  #detail-panel.empty{ color:var(--text-secondary); font-size:13px; }
+  #detail-panel .dp-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;}
+  #detail-panel .dp-title{ font-size:16px; font-weight:700; }
+  #detail-panel .dp-badge{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; letter-spacing:.03em;}
+  .dp-badge.occ{ background:var(--occ-fill); color:var(--occ-text); }
+  .dp-badge.vac{ background:var(--vac-fill); color:var(--vac-text); }
+  .dp-badge.other{ background:var(--other-fill); color:var(--other-stroke); }
+  #detail-panel table{ width:100%; border-collapse:collapse; margin-top:8px; }
+  #detail-panel td{ padding:3px 0; vertical-align:top; }
+  #detail-panel td.k{ color:var(--text-secondary); width:38%; }
+  #detail-panel td.v{ text-align:right; }
+  #detail-panel a{ color:var(--text-accent); text-decoration:none; }
+
+  .tabs{ display:flex; gap:6px; margin:26px 0 14px; border-bottom:1px solid var(--border); }
+  .tab-btn{
+    appearance:none; border:none; background:none; cursor:pointer;
+    font-size:13.5px; font-weight:600; color:var(--text-secondary);
+    padding:9px 14px; border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab-btn.active{ color:var(--text-primary); border-bottom-color:var(--text-accent); }
+
+  .toolbar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+  .toolbar .grp{ display:flex; gap:6px; flex-wrap:wrap; }
+  button.chip{
+    appearance:none; cursor:pointer; font-size:12.5px; font-weight:600;
+    background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text-primary);
+    border-radius:8px; padding:7px 11px;
+  }
+  button.chip:hover{ background:var(--border); }
+  button.chip.active{ background:var(--text-accent); border-color:var(--text-accent); color:#fff; }
+  button.chip:disabled{ opacity:.4; cursor:not-allowed; }
+  .spacer{ flex:1; }
+  #selCount{ font-size:12.5px; color:var(--text-secondary); }
+
+  table.unit-table{ width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; background:var(--surface-3); border:1px solid var(--border); border-radius:12px; overflow:hidden;}
+  table.unit-table thead th{
+    text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--text-secondary); background:var(--surface-2); padding:9px 8px; cursor:pointer; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  table.unit-table thead th.sortable:hover{ color:var(--text-primary); }
+  table.unit-table tbody td{ padding:9px 8px; border-top:1px solid var(--border); text-align:center; vertical-align:middle; }
+  table.unit-table tbody tr:hover{ background:#FBFBF9; }
+  table.unit-table tbody tr.is-selected{ background:#EEF3FC; }
+  .status-pill{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; display:inline-block; }
+  .status-pill.occ{ background:var(--occ-fill); color:var(--occ-text); }
+  .status-pill.vac{ background:var(--vac-fill); color:var(--vac-text); }
+  .status-pill.other{ background:var(--other-fill); color:var(--other-stroke); }
+  td.num{ text-align:center; font-variant-numeric:tabular-nums; }
+  th.num{ text-align:center; }
+
+  #sendBtnWrap{ margin-top:14px; display:flex; justify-content:flex-end; gap:10px; }
+  #welcomeBtn{
+    appearance:none; cursor:pointer; border:1px solid var(--text-accent); border-radius:10px;
+    background:#fff; color:var(--text-accent); font-size:14px; font-weight:700;
+    padding:11px 20px;
+  }
+  #sendBtn{
+    appearance:none; cursor:pointer; border:none; border-radius:10px;
+    background:var(--text-accent); color:#fff; font-size:14px; font-weight:700;
+    padding:11px 20px;
+  }
+  #sendBtn:disabled{ background:#B9C6DC; cursor:not-allowed; }
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(30,29,26,0.45); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-backdrop.show{ display:flex; }
+  .modal{
+    background:var(--surface-3); border-radius:16px; max-width:520px; width:100%;
+    max-height:88vh; overflow-y:auto; padding:22px 24px 24px;
+  }
+  .modal h3{ margin:0 0 4px; font-size:17px; }
+  .modal p.sub{ margin:0 0 16px; font-size:12.5px; color:var(--text-secondary); }
+  .modal label{ font-size:12.5px; font-weight:600; display:block; margin:14px 0 6px; }
+  .modal input[type=text], .modal input[type=email], .modal input[type=tel], .modal select{
+    width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px;
+    background:#fff; font-family:inherit;
+  }
+  .method-row{ display:flex; gap:8px; }
+  .method-row button{ flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-strong); background:var(--surface-2); cursor:pointer; font-weight:600; font-size:13px; }
+  .method-row button.active{ background:var(--text-accent); border-color:var(--text-accent); color:#fff; }
+  .msg-preview{
+    margin-top:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; font-size:12.5px; white-space:pre-wrap; line-height:1.5;
+    width:100%; min-height:260px; resize:vertical; font-family:inherit; color:var(--text-primary);
+    box-sizing:border-box;
+  }
+  .modal-actions{ display:flex; gap:8px; margin-top:16px; }
+  .modal-actions button{ flex:1; padding:11px; border-radius:9px; font-weight:700; font-size:13.5px; cursor:pointer; border:1px solid var(--border-strong); }
+  .btn-primary{ background:var(--text-accent) !important; color:#fff !important; border-color:var(--text-accent) !important; }
+  .btn-ghost{ background:var(--surface-3); }
+  .modal-close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-secondary); }
+  .modal{ position:relative; }
+  .unit-checkbox-list{ max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px; margin-top:6px; }
+  .unit-checkbox-list label{ display:flex; align-items:center; gap:8px; font-weight:400; font-size:13px; padding:4px 2px; margin:0; }
+
+  /* --- View switcher --- */
+  .view-tabs{ display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--border); }
+  .view-tab-btn{
+    appearance:none; border:none; background:none; cursor:pointer;
+    font-size:14.5px; font-weight:700; color:var(--text-secondary);
+    padding:12px 6px; border-bottom:3px solid transparent; margin-bottom:-1px;
+  }
+  .view-tab-btn.active{ color:var(--text-primary); border-bottom-color:var(--text-accent); }
+  .view-panel{ display:none; }
+  .view-panel.active{ display:block; }
+
+  /* --- Parking lot page (embedded) --- */
+  #parkingPanel .page{ max-width:1000px; margin:0 auto; padding:0; }
+  #parkingPanel h1{ font-size:20px; font-weight:600; margin:0 0 4px; }
+  #parkingPanel .subtitle{ font-size:13px; color:var(--text-secondary); margin:0 0 20px; }
+  #parkingPanel .box{ fill:var(--surface-1); stroke:var(--border-strong); }
+  #parkingPanel .t{ fill:var(--text-primary); font-size:13px; font-weight:500; font-family:inherit; }
+  #parkingPanel .t.small{ font-size:10px; }
+  #parkingPanel .alley-label{ fill:var(--text-secondary); font-size:9.5px; font-style:italic; }
+  #parkingPanel .assigned{ fill:rgba(99,153,34,0.30); stroke:#3B6D11; }
+  #parkingPanel .vacant{ fill:#EDEBE6; stroke:#B8B5AD; }
+  #parkingPanel .pnum{ fill:#2B2A27; font-size:11px; font-weight:700; font-family:inherit; }
+  #parkingPanel .pinfo{ fill:#2B2A27; font-family:inherit; }
+  .parking-legend{ display:flex; gap:18px; align-items:center; font-size:12.5px; color:var(--text-secondary); margin-bottom:16px; }
+@media (max-width: 820px){
+    .floors-scroll{
+      display:flex; grid-template-columns:none; overflow-x:auto; padding-bottom:10px;
+      -webkit-overflow-scrolling:touch;
+    }
+    section.floor{ flex:0 0 auto; width:340px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>6920 Miramar Road</h1>
+  <p>Interactive Floor Plan &amp; Leasing Dashboard — click any unit for details, or use the list below to build a self-tour selection.</p>
+</header>
+
+<div class="view-tabs">
+  <button class="view-tab-btn active" data-view="floors">Building Floors</button>
+  <button class="view-tab-btn" data-view="parking">Parking Lot</button>
+</div>
+
+<div id="floorsPanel" class="view-panel active">
+
+<div class="stats" id="statsRow"></div>
+
+<div class="legend">
+  <span><span class="swatch occ"></span> Occupied</span>
+  <span><span class="swatch vac"></span> Vacant</span>
+  <span style="margin-left:auto">Click a unit for full details</span>
+</div>
+
+<div id="detail-panel" class="empty">Click any unit on a floor plan below to see its details.</div>
+
+<div class="floors-scroll">
+<section class="floor">
+<h2>Floor 1</h2>
+<svg width="100%" viewBox="0 0 680 1300" preserveAspectRatio="none">
+<g id="rooms-1">
+<rect class="box unit" data-u="111" x="41" y="40" width="119" height="155" stroke-width="0.5"/>
+<rect class="box unit" data-u="112" x="160" y="40" width="120" height="104" stroke-width="0.5"/>
+<rect class="box unit" data-u="113" x="281" y="40" width="119" height="104" stroke-width="0.5"/>
+<rect class="box unit" data-u="114" x="401" y="40" width="119" height="104" stroke-width="0.5"/>
+<rect class="box unit" data-u="115" x="521" y="40" width="119" height="104" stroke-width="0.5"/>
+<rect class="box unit" data-u="110" x="41" y="196" width="162" height="77" stroke-width="0.5"/>
+<rect class="box unit" data-u="109" x="203" y="196" width="77" height="77" stroke-width="0.5"/>
+<rect class="box unit" data-u="117" x="402" y="195" width="150" height="104" stroke-width="0.5"/>
+<rect class="box unit" data-u="116" x="552" y="144" width="88" height="155" stroke-width="0.5"/>
+<polygon class="box unit" data-u="103" points="41,315 230,315 230,453 275,453 275,588 41,588" stroke-width="0.5"/>
+<rect class="box unit" data-u="100" x="360" y="300" width="280" height="119" stroke-width="0.5"/>
+<rect class="box unit" data-u="101" x="360" y="420" width="280" height="133" stroke-width="0.5"/>
+<rect class="box unit" data-u="104" x="360" y="553" width="280" height="156" stroke-width="0.5"/>
+<rect class="box unit" data-u="102" x="41" y="627" width="129" height="113" stroke-width="0.5"/>
+<rect class="box unit" data-u="118" x="170" y="627" width="110" height="82" stroke-width="0.5"/>
+<rect class="box unit" data-u="119" x="220" y="804" width="60" height="64" stroke-width="0.5"/>
+<rect class="box unit" data-u="120" x="41" y="740" width="129" height="119" stroke-width="0.5"/>
+<rect class="box unit" data-u="105" x="360" y="709" width="280" height="181" stroke-width="0.5"/>
+<rect class="box unit" data-u="121" x="41" y="860" width="129" height="119" stroke-width="0.5"/>
+<rect class="box unit" data-u="106" x="360" y="891" width="280" height="220" stroke-width="0.5"/>
+<rect class="box unit" data-u="122" x="41" y="980" width="179" height="98" stroke-width="0.5"/>
+<polygon class="box unit" data-u="108" points="41,1112 284,1112 284,1150 360,1150 360,1259 41,1259" stroke-width="0.5"/>
+<rect class="box unit" data-u="107" x="360" y="1112" width="280" height="147" stroke-width="0.5"/>
+</g>
+<line x1="220" y1="868" x2="220" y2="980" stroke="var(--border-strong)" stroke-width="0.5"/>
+<line x1="230" y1="315" x2="275" y2="315" stroke="var(--border-strong)" stroke-width="0.5"/>
+<line x1="220" y1="1078" x2="280" y2="1078" stroke="var(--border-strong)" stroke-width="0.5"/>
+<rect x="40" y="40" width="600" height="1219" fill="none" stroke="var(--border-stronger)" stroke-width="1.5"/>
+<g style="pointer-events:none">
+<text class="t" x="100" y="117" text-anchor="middle" dominant-baseline="central">111</text>
+<text class="t" x="220" y="92" text-anchor="middle" dominant-baseline="central">112</text>
+<text class="t" x="340" y="92" text-anchor="middle" dominant-baseline="central">113</text>
+<text class="t" x="460" y="92" text-anchor="middle" dominant-baseline="central">114</text>
+<text class="t" x="580" y="92" text-anchor="middle" dominant-baseline="central">115</text>
+<text class="t" x="122" y="234" text-anchor="middle" dominant-baseline="central">110</text>
+<text class="t" x="241" y="234" text-anchor="middle" dominant-baseline="central">109</text>
+<text class="t" x="477" y="247" text-anchor="middle" dominant-baseline="central">117</text>
+<text class="t" x="596" y="222" text-anchor="middle" dominant-baseline="central">116</text>
+<text class="t" x="148" y="459" text-anchor="middle" dominant-baseline="central">103</text>
+<text class="t" x="500" y="359" text-anchor="middle" dominant-baseline="central">100</text>
+<text class="t" x="500" y="486" text-anchor="middle" dominant-baseline="central">101</text>
+<text class="t" x="500" y="631" text-anchor="middle" dominant-baseline="central">104</text>
+<text class="t" x="105" y="684" text-anchor="middle" dominant-baseline="central">102</text>
+<text class="t" x="225" y="668" text-anchor="middle" dominant-baseline="central">118</text>
+<text class="t" x="250" y="836" text-anchor="middle" dominant-baseline="central">119</text>
+<text class="t" x="105" y="799" text-anchor="middle" dominant-baseline="central">120</text>
+<text class="t" x="500" y="799" text-anchor="middle" dominant-baseline="central">105</text>
+<text class="t" x="105" y="919" text-anchor="middle" dominant-baseline="central">121</text>
+<text class="t" x="500" y="1001" text-anchor="middle" dominant-baseline="central">106</text>
+<text class="t" x="130" y="1029" text-anchor="middle" dominant-baseline="central">122</text>
+<text class="t" x="193" y="1189" text-anchor="middle" dominant-baseline="central">108</text>
+<text class="t" x="500" y="1186" text-anchor="middle" dominant-baseline="central">107</text>
+</g>
+</svg>
+</section>
+
+<section class="floor">
+<h2>Floor 2</h2>
+<svg width="100%" viewBox="0 0 680 1630" preserveAspectRatio="none">
+<g id="rooms-2">
+<polygon class="box unit" data-u="202" points="40,40 640,40 640,291 229,291 229,591 293,591 293,744 40,744" stroke-width="0.5"/>
+<rect class="box unit" data-u="201" x="350" y="291" width="290" height="266" stroke-width="0.5"/>
+<rect class="box unit" data-u="203" x="350" y="557" width="290" height="188" stroke-width="0.5"/>
+<rect class="box unit" data-u="204" x="350" y="745" width="290" height="333" stroke-width="0.5"/>
+<rect class="box unit" data-u="206" x="350" y="1078" width="290" height="256" stroke-width="0.5"/>
+<rect class="box unit" data-u="207" x="350" y="1334" width="191" height="97" stroke-width="0.5"/>
+<rect class="box unit" data-u="208" x="541" y="1334" width="99" height="129" stroke-width="0.5"/>
+<rect class="box unit" data-u="212" x="40" y="1463" width="175" height="126" stroke-width="0.5"/>
+<rect class="box unit" data-u="221" x="213" y="1463" width="87" height="126" stroke-width="0.5"/>
+<rect class="box unit" data-u="211" x="300" y="1463" width="100" height="126" stroke-width="0.5"/>
+<rect class="box unit" data-u="210" x="400" y="1463" width="96" height="126" stroke-width="0.5"/>
+<rect class="box unit" data-u="209" x="496" y="1463" width="144" height="126" stroke-width="0.5"/>
+<polygon class="box unit" data-u="216" points="40,815 293,815 293,877 177,877 177,916 40,916" stroke-width="0.5"/>
+<rect class="box unit" data-u="218" x="40" y="916" width="137" height="100" stroke-width="0.5"/>
+<rect class="box unit" data-u="214" x="40" y="1016" width="137" height="100" stroke-width="0.5"/>
+<rect class="box unit" data-u="215" x="40" y="1116" width="137" height="97" stroke-width="0.5"/>
+<rect class="box unit" data-u="213" x="40" y="1213" width="177" height="113" stroke-width="0.5"/>
+<rect class="box unit" data-u="220" x="40" y="1326" width="143" height="137" stroke-width="0.5"/>
+<rect class="box unit" data-u="219" x="183" y="1326" width="99" height="105" stroke-width="0.5"/>
+<rect class="box unit" data-u="217" x="216" y="961" width="75" height="85" stroke-width="0.5"/>
+</g>
+<line x1="217" y1="1046" x2="217" y2="1324" stroke="#D7D4CC" stroke-width="0.5"/>
+<rect x="40" y="40" width="600" height="1550" fill="none" stroke="var(--border-stronger)" stroke-width="1.5"/>
+<g style="pointer-events:none">
+<text class="t" x="340" y="165" text-anchor="middle" dominant-baseline="central">202</text>
+<text class="t" x="495" y="424" text-anchor="middle" dominant-baseline="central">201</text>
+<text class="t" x="495" y="651" text-anchor="middle" dominant-baseline="central">203</text>
+<text class="t" x="495" y="911" text-anchor="middle" dominant-baseline="central">204</text>
+<text class="t" x="495" y="1206" text-anchor="middle" dominant-baseline="central">206</text>
+<text class="t" x="445" y="1382" text-anchor="middle" dominant-baseline="central">207</text>
+<text class="t" x="590" y="1399" text-anchor="middle" dominant-baseline="central">208</text>
+<text class="t" x="127" y="1526" text-anchor="middle" dominant-baseline="central">212</text>
+<text class="t" x="256" y="1526" text-anchor="middle" dominant-baseline="central">221</text>
+<text class="t" x="350" y="1526" text-anchor="middle" dominant-baseline="central">211</text>
+<text class="t" x="448" y="1526" text-anchor="middle" dominant-baseline="central">210</text>
+<text class="t" x="568" y="1526" text-anchor="middle" dominant-baseline="central">209</text>
+<text class="t" x="152" y="859" text-anchor="middle" dominant-baseline="central">216</text>
+<text class="t" x="109" y="966" text-anchor="middle" dominant-baseline="central">218</text>
+<text class="t" x="108" y="1066" text-anchor="middle" dominant-baseline="central">214</text>
+<text class="t" x="108" y="1164" text-anchor="middle" dominant-baseline="central">215</text>
+<text class="t" x="128" y="1269" text-anchor="middle" dominant-baseline="central">213</text>
+<text class="t" x="111" y="1394" text-anchor="middle" dominant-baseline="central">220</text>
+<text class="t" x="232" y="1379" text-anchor="middle" dominant-baseline="central">219</text>
+<text class="t" x="253" y="1003" text-anchor="middle" dominant-baseline="central">217</text>
+</g>
+</svg>
+</section>
+
+<section class="floor">
+<h2>Floor 3</h2>
+<svg width="100%" viewBox="0 0 680 1570" preserveAspectRatio="none">
+<g id="rooms-3">
+<rect class="box unit" data-u="300" x="40" y="40" width="600" height="248" stroke-width="0.5"/>
+<rect class="box unit" data-u="301" x="351" y="288" width="287" height="243" stroke-width="0.5"/>
+<rect class="box unit" data-u="304" x="351" y="531" width="287" height="447" stroke-width="0.5"/>
+<polygon class="box unit" data-u="302" points="40,288 208,288 208,423 163,423 163,525 283,525 283,723 40,723" stroke-width="0.5"/>
+<rect class="box unit" data-u="307" x="40" y="782" width="200" height="105" stroke-width="0.5"/>
+<rect class="box unit" data-u="312" x="240" y="782" width="56" height="62" stroke-width="0.5"/>
+<rect class="box unit" data-u="308" x="40" y="887" width="145" height="110" stroke-width="0.5"/>
+<rect class="box unit" data-u="309" x="40" y="997" width="145" height="106" stroke-width="0.5"/>
+<rect class="box unit" data-u="310" x="40" y="1103" width="145" height="89" stroke-width="0.5"/>
+<rect class="box unit" data-u="311" x="40" y="1192" width="145" height="84" stroke-width="0.5"/>
+<rect class="box unit" data-u="319" x="40" y="1276" width="145" height="95" stroke-width="0.5"/>
+<rect class="box unit" data-u="313" x="40" y="1371" width="145" height="72" stroke-width="0.5"/>
+<polygon class="box unit" data-u="314" points="40,1443 185,1443 185,1485 208,1485 208,1527 40,1527" stroke-width="0.5"/>
+<rect class="box unit" data-u="318" x="228" y="944" width="71" height="69" stroke-width="0.5"/>
+<rect class="box unit" data-u="315" x="230" y="1273" width="88" height="96" stroke-width="0.5"/>
+<rect class="box unit" data-u="316" x="230" y="1369" width="88" height="73" stroke-width="0.5"/>
+<polygon class="box unit" data-u="317" points="230,1442 318,1442 318,1527 208,1527 208,1485 230,1485" stroke-width="0.5"/>
+<rect class="box unit" data-u="330" x="318" y="1273" width="89" height="254" stroke-width="0.5"/>
+<rect class="box unit" data-u="321" x="512" y="977" width="124" height="88" stroke-width="0.5"/>
+<rect class="box unit" data-u="324" x="512" y="1065" width="124" height="93" stroke-width="0.5"/>
+<rect class="box unit" data-u="320" x="512" y="1158" width="124" height="111" stroke-width="0.5"/>
+<rect class="box unit" data-u="323" x="357" y="1160" width="104" height="111" stroke-width="0.5"/>
+<rect class="box unit" data-u="325" x="407" y="1271" width="77" height="78" stroke-width="0.5"/>
+<rect class="box unit" data-u="327" x="407" y="1349" width="77" height="85" stroke-width="0.5"/>
+<rect class="box unit" data-u="329" x="407" y="1434" width="77" height="93" stroke-width="0.5"/>
+<rect class="box unit" data-u="322" x="526" y="1271" width="111" height="99" stroke-width="0.5"/>
+<rect class="box unit" data-u="326" x="526" y="1370" width="111" height="70" stroke-width="0.5"/>
+<polygon class="box unit" data-u="328" points="526,1440 637,1440 637,1527 484,1527 484,1479 526,1479" stroke-width="0.5"/>
+</g>
+<line x1="283" y1="288" x2="283" y2="525" stroke="var(--border-strong)" stroke-width="0.5"/>
+<line x1="228" y1="1013" x2="228" y2="1273" stroke="var(--border-strong)" stroke-width="0.5"/>
+<line x1="299" y1="1013" x2="299" y2="1273" stroke="var(--border-strong)" stroke-width="0.5"/>
+<line x1="351" y1="978" x2="357" y2="1160" stroke="var(--border-strong)" stroke-width="0.5"/>
+<rect x="40" y="40" width="600" height="1487" fill="none" stroke="var(--border-stronger)" stroke-width="1.5"/>
+<g style="pointer-events:none">
+<text class="t" x="340" y="164" text-anchor="middle" dominant-baseline="central">300</text>
+<text class="t" x="494" y="409" text-anchor="middle" dominant-baseline="central">301</text>
+<text class="t" x="494" y="754" text-anchor="middle" dominant-baseline="central">304</text>
+<text class="t" x="161" y="624" text-anchor="middle" dominant-baseline="central">302</text>
+<text class="t" x="140" y="834" text-anchor="middle" dominant-baseline="central">307</text>
+<text class="t" x="268" y="813" text-anchor="middle" dominant-baseline="central">312</text>
+<text class="t" x="112" y="942" text-anchor="middle" dominant-baseline="central">308</text>
+<text class="t" x="113" y="1050" text-anchor="middle" dominant-baseline="central">309</text>
+<text class="t" x="113" y="1147" text-anchor="middle" dominant-baseline="central">310</text>
+<text class="t" x="113" y="1234" text-anchor="middle" dominant-baseline="central">311</text>
+<text class="t" x="112" y="1323" text-anchor="middle" dominant-baseline="central">319</text>
+<text class="t" x="112" y="1407" text-anchor="middle" dominant-baseline="central">313</text>
+<text class="t" x="112" y="1486" text-anchor="middle" dominant-baseline="central">314</text>
+<text class="t" x="264" y="978" text-anchor="middle" dominant-baseline="central">318</text>
+<text class="t" x="274" y="1321" text-anchor="middle" dominant-baseline="central">315</text>
+<text class="t" x="274" y="1405" text-anchor="middle" dominant-baseline="central">316</text>
+<text class="t" x="274" y="1485" text-anchor="middle" dominant-baseline="central">317</text>
+<text class="t" x="363" y="1400" text-anchor="middle" dominant-baseline="central">330</text>
+<text class="t" x="574" y="1021" text-anchor="middle" dominant-baseline="central">321</text>
+<text class="t" x="574" y="1111" text-anchor="middle" dominant-baseline="central">324</text>
+<text class="t" x="574" y="1213" text-anchor="middle" dominant-baseline="central">320</text>
+<text class="t" x="409" y="1215" text-anchor="middle" dominant-baseline="central">323</text>
+<text class="t" x="445" y="1310" text-anchor="middle" dominant-baseline="central">325</text>
+<text class="t" x="445" y="1391" text-anchor="middle" dominant-baseline="central">327</text>
+<text class="t" x="446" y="1481" text-anchor="middle" dominant-baseline="central">329</text>
+<text class="t" x="581" y="1320" text-anchor="middle" dominant-baseline="central">322</text>
+<text class="t" x="581" y="1405" text-anchor="middle" dominant-baseline="central">326</text>
+<text class="t" x="565" y="1491" text-anchor="middle" dominant-baseline="central">328</text>
+</g>
+</svg>
+</section>
+</div><!-- /floors-scroll -->
+
+<h2 style="font-size:17px;margin:8px 0 0;">Unit List</h2>
+<div class="tabs">
+  <button class="tab-btn active" data-tab="all">All Units</button>
+  <button class="tab-btn" data-tab="vacant">Vacant</button>
+  <button class="tab-btn" data-tab="occupied">Occupied</button>
+</div>
+
+<div class="toolbar">
+  <div class="grp">
+    <button class="chip" id="sortAZ">Sort A–Z</button>
+    <button class="chip" id="sortZA">Sort Z–A</button>
+    <button class="chip" id="sortSize">Sort by Size</button>
+    <button class="chip" id="sortRent">Sort by Rent</button>
+  </div>
+  <div class="grp">
+    <button class="chip" id="showSelectedBtn">Show Only Selected</button>
+    <button class="chip" id="clearFiltersBtn">Clear Filters</button>
+  </div>
+  <div class="spacer"></div>
+  <div id="selCount">0 selected</div>
+</div>
+
+<table class="unit-table">
+  <thead>
+    <tr>
+      <th style="width:6%;"></th>
+      <th style="width:18%;">Unit</th>
+      <th class="num" style="width:14%;">Size (sq ft)</th>
+      <th class="num" style="width:16%;">Rent / Listing</th>
+      <th style="width:14%;">Door Code</th>
+      <th style="width:14%;">Status</th>
+      <th style="width:14%;"></th>
+    </tr>
+  </thead>
+  <tbody id="unitTableBody"></tbody>
+</table>
+
+<div id="sendBtnWrap">
+  <button id="sendBtn" disabled>Send Selected Units</button>
+</div>
+<p class="sub" style="text-align:right;margin-top:6px;">To send a unit's details to a tenant, use the "Send Details" button on that unit's row above.</p>
+
+</div><!-- /floorsPanel -->
+
+<div id="parkingPanel" class="view-panel">
+<div class="parking-legend">
+  <span><span class="swatch occ"></span> Assigned tenant</span>
+  <span><span class="swatch vac"></span> Unassigned space</span>
+</div>
+<div class="page">
+<h1>Miramar — Full Parking Lot</h1>
+<p class="subtitle">All parking spaces are the same uniform size as the basement spots, with matching aisle widths between every column (same gap as between 54 and 83, now also between the 24 and 17 ranges).</p>
+
+<svg width="100%" viewBox="0 0 1500 3150">
+<g>
+<rect class="assigned" x="188" y="105" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="185" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="265" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="345" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="425" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="505" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="585" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="665" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="745" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="825" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="905" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="985" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="1065" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="1145" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="1225" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="1305" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="1385" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="1465" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="1545" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="1625" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="1705" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="1785" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="1865" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="1945" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="188" y="2025" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="2105" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="2185" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="188" y="2265" width="160" height="160" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="825" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="945" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1025" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1105" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1185" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1265" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1345" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1425" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1505" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1585" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1665" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="592" y="1745" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="592" y="1825" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="592" y="1905" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="1985" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2105" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2185" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2265" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2345" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2425" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2505" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="592" y="2585" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="592" y="2705" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2785" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="592" y="2865" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="592" y="2945" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1412" width="199" height="84" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1496" width="199" height="84" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1580" width="199" height="85" stroke-width="0.5"/>
+<rect class="assigned" x="1235" y="1412" width="195" height="84" stroke-width="0.5"/>
+<rect class="assigned" x="1235" y="1496" width="195" height="84" stroke-width="0.5"/>
+<rect class="assigned" x="1235" y="1580" width="195" height="85" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1705" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1785" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1865" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="1945" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2025" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2105" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2185" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2265" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2345" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2425" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2505" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2585" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2665" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2745" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2825" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="1252" y="1705" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="1252" y="1785" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="1252" y="1865" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="1252" y="1945" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="1252" y="2025" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="1252" y="2105" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="1252" y="2185" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="1252" y="2265" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="1252" y="2345" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="1252" y="2505" width="196" height="80" stroke-width="0.5"/>
+<rect class="assigned" x="1252" y="2585" width="196" height="80" stroke-width="0.5"/>
+<rect class="vacant" x="1252" y="2665" width="196" height="240" stroke-width="0.5"/>
+<rect class="assigned" x="848" y="2905" width="600" height="240" stroke-width="0.5"/>
+<rect x="592" y="2065" width="196" height="40" fill="#FFFFFF" stroke="none"/>
+<rect x="592" y="2665" width="196" height="40" fill="#FFFFFF" stroke="none"/>
+<rect x="848" y="1665" width="196" height="40" fill="#FFFFFF" stroke="none"/>
+<rect x="1252" y="1665" width="196" height="40" fill="#FFFFFF" stroke="none"/>
+<rect x="1252" y="2425" width="196" height="80" fill="#FFFFFF" stroke="var(--border-strong)" stroke-width="0.5"/>
+<polygon class="vacant" points="857,865 1067,1229 998,1269 788,905" stroke-width="0.5"/>
+<line x1="962" y1="1047" x2="893" y2="1087" stroke="var(--border-strong)" stroke-width="0.5"/>
+<line x1="798" y1="2065" x2="798" y2="2105" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="808" y1="2065" x2="808" y2="2105" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="818" y1="2065" x2="818" y2="2105" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="828" y1="2065" x2="828" y2="2105" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="838" y1="2065" x2="838" y2="2105" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="798" y1="2665" x2="798" y2="2705" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="808" y1="2665" x2="808" y2="2705" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="818" y1="2665" x2="818" y2="2705" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="828" y1="2665" x2="828" y2="2705" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<line x1="838" y1="2665" x2="838" y2="2705" stroke="var(--border-stronger)" stroke-width="0.75"/>
+<text class="pnum" x="286" y="134" text-anchor="middle" dominant-baseline="central">50</text><text class="pinfo" x="286" y="145" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 214</text><text class="pinfo" x="286" y="156" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Klassik Cars</text>
+<text class="pnum" x="286" y="214" text-anchor="middle" dominant-baseline="central">49</text><text class="pinfo" x="286" y="225" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 314</text><text class="pinfo" x="286" y="236" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Love Cars</text>
+<text class="pnum" x="286" y="294" text-anchor="middle" dominant-baseline="central">48</text><text class="pinfo" x="286" y="305" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 118</text><text class="pinfo" x="286" y="316" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Euro Auto Group</text>
+<text class="t small" x="286" y="385" text-anchor="middle" dominant-baseline="central">47</text>
+<text class="pnum" x="286" y="454" text-anchor="middle" dominant-baseline="central">46</text><text class="pinfo" x="286" y="465" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 110</text><text class="pinfo" x="286" y="476" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Vortex</text>
+<text class="pnum" x="286" y="534" text-anchor="middle" dominant-baseline="central">45</text><text class="pinfo" x="286" y="545" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 325</text><text class="pinfo" x="286" y="556" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Revline Motors LLC</text>
+<text class="t small" x="286" y="625" text-anchor="middle" dominant-baseline="central">44</text>
+<text class="t small" x="286" y="705" text-anchor="middle" dominant-baseline="central">43</text>
+<text class="t small" x="286" y="785" text-anchor="middle" dominant-baseline="central">42</text>
+<text class="t small" x="286" y="865" text-anchor="middle" dominant-baseline="central">41</text>
+<text class="t small" x="286" y="945" text-anchor="middle" dominant-baseline="central">40</text>
+<text class="t small" x="286" y="1025" text-anchor="middle" dominant-baseline="central">39</text>
+<text class="t small" x="286" y="1105" text-anchor="middle" dominant-baseline="central">38</text>
+<text class="t small" x="286" y="1185" text-anchor="middle" dominant-baseline="central">37</text>
+<text class="pnum" x="286" y="1254" text-anchor="middle" dominant-baseline="central">36</text><text class="pinfo" x="286" y="1265" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 309</text><text class="pinfo" x="286" y="1276" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">A & D Beauty Studio</text>
+<text class="pnum" x="286" y="1334" text-anchor="middle" dominant-baseline="central">35</text><text class="pinfo" x="286" y="1345" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 211</text><text class="pinfo" x="286" y="1356" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Triton Motors LLC</text>
+<text class="pnum" x="286" y="1414" text-anchor="middle" dominant-baseline="central">34</text><text class="pinfo" x="286" y="1425" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 221</text><text class="pinfo" x="286" y="1436" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Black Limo LLC</text>
+<text class="t small" x="286" y="1505" text-anchor="middle" dominant-baseline="central">33</text>
+<text class="t small" x="286" y="1585" text-anchor="middle" dominant-baseline="central">32</text>
+<text class="t small" x="286" y="1665" text-anchor="middle" dominant-baseline="central">31</text>
+<text class="t small" x="286" y="1745" text-anchor="middle" dominant-baseline="central">30</text>
+<text class="pnum" x="286" y="1814" text-anchor="middle" dominant-baseline="central">29</text><text class="pinfo" x="286" y="1825" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="286" y="1836" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="pnum" x="286" y="1894" text-anchor="middle" dominant-baseline="central">28</text><text class="pinfo" x="286" y="1905" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="286" y="1916" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="pnum" x="286" y="1974" text-anchor="middle" dominant-baseline="central">27</text><text class="pinfo" x="286" y="1985" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="286" y="1996" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="pnum" x="286" y="2054" text-anchor="middle" dominant-baseline="central">26</text><text class="pinfo" x="286" y="2065" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="286" y="2076" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="t small" x="286" y="2145" text-anchor="middle" dominant-baseline="central">25</text>
+<text class="t small" x="286" y="2225" text-anchor="middle" dominant-baseline="central">24</text>
+<text class="t small" x="268" y="2345" text-anchor="middle" dominant-baseline="central">TRASH</text>
+<text class="pnum" x="690" y="854" text-anchor="middle" dominant-baseline="central">51</text><text class="pinfo" x="690" y="865" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 208</text><text class="pinfo" x="690" y="876" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">KOK Auto Sales</text>
+<text class="pnum" x="690" y="974" text-anchor="middle" dominant-baseline="central">1</text><text class="pinfo" x="690" y="985" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="996" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1054" text-anchor="middle" dominant-baseline="central">2</text><text class="pinfo" x="690" y="1065" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1076" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1134" text-anchor="middle" dominant-baseline="central">3</text><text class="pinfo" x="690" y="1145" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1156" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1214" text-anchor="middle" dominant-baseline="central">4</text><text class="pinfo" x="690" y="1225" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1236" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1294" text-anchor="middle" dominant-baseline="central">5</text><text class="pinfo" x="690" y="1305" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1316" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1374" text-anchor="middle" dominant-baseline="central">6</text><text class="pinfo" x="690" y="1385" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1396" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1454" text-anchor="middle" dominant-baseline="central">7</text><text class="pinfo" x="690" y="1465" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1476" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1534" text-anchor="middle" dominant-baseline="central">8</text><text class="pinfo" x="690" y="1545" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1556" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1614" text-anchor="middle" dominant-baseline="central">9</text><text class="pinfo" x="690" y="1625" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1636" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="pnum" x="690" y="1694" text-anchor="middle" dominant-baseline="central">10</text><text class="pinfo" x="690" y="1705" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 120</text><text class="pinfo" x="690" y="1716" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Favorite Auto Inc</text>
+<text class="t small" x="690" y="1785" text-anchor="middle" dominant-baseline="central">11</text>
+<text class="t small" x="690" y="1865" text-anchor="middle" dominant-baseline="central">12</text>
+<text class="t small" x="690" y="1945" text-anchor="middle" dominant-baseline="central">13</text>
+<text class="pnum" x="690" y="2014" text-anchor="middle" dominant-baseline="central">14</text><text class="pinfo" x="690" y="2025" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="690" y="2036" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="pnum" x="690" y="2134" text-anchor="middle" dominant-baseline="central">15</text><text class="pinfo" x="690" y="2145" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="690" y="2156" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="pnum" x="690" y="2214" text-anchor="middle" dominant-baseline="central">16</text><text class="pinfo" x="690" y="2225" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 102</text><text class="pinfo" x="690" y="2236" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mikail Auto Sales</text>
+<text class="pnum" x="690" y="2294" text-anchor="middle" dominant-baseline="central">17</text><text class="pinfo" x="690" y="2305" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 200/202</text><text class="pinfo" x="690" y="2316" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">LA Acting Studio SD</text>
+<text class="pnum" x="690" y="2374" text-anchor="middle" dominant-baseline="central">18</text><text class="pinfo" x="690" y="2385" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 200/202</text><text class="pinfo" x="690" y="2396" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">LA Acting Studio SD</text>
+<text class="pnum" x="690" y="2454" text-anchor="middle" dominant-baseline="central">19</text><text class="pinfo" x="690" y="2465" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 106</text><text class="pinfo" x="690" y="2476" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Barefeet Podiatry</text>
+<text class="pnum" x="690" y="2534" text-anchor="middle" dominant-baseline="central">20</text><text class="pinfo" x="690" y="2545" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 106</text><text class="pinfo" x="690" y="2556" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Barefeet Podiatry</text>
+<text class="t small" x="690" y="2625" text-anchor="middle" dominant-baseline="central">2h guest</text>
+<text class="t small" x="690" y="2745" text-anchor="middle" dominant-baseline="central">2h guest</text>
+<text class="pnum" x="690" y="2814" text-anchor="middle" dominant-baseline="central">21</text><text class="pinfo" x="690" y="2825" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 315</text><text class="pinfo" x="690" y="2836" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Fix It Pro Appliance Repair</text>
+<text class="pnum" x="690" y="2894" text-anchor="middle" dominant-baseline="central">22</text><text class="pinfo" x="690" y="2905" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 315</text><text class="pinfo" x="690" y="2916" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Fix It Pro Appliance Repair</text>
+<text class="t small" x="690" y="2985" text-anchor="middle" dominant-baseline="central">21</text>
+<text class="pnum" x="948" y="1443" text-anchor="middle" dominant-baseline="central">54</text><text class="pinfo" x="948" y="1454" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="948" y="1465" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="948" y="1527" text-anchor="middle" dominant-baseline="central">55</text><text class="pinfo" x="948" y="1538" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="948" y="1549" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="948" y="1612" text-anchor="middle" dominant-baseline="central">56</text><text class="pinfo" x="948" y="1622" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="948" y="1634" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="1332" y="1443" text-anchor="middle" dominant-baseline="central">83</text><text class="pinfo" x="1332" y="1454" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="1332" y="1465" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="1332" y="1527" text-anchor="middle" dominant-baseline="central">82</text><text class="pinfo" x="1332" y="1538" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="1332" y="1549" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="1332" y="1612" text-anchor="middle" dominant-baseline="central">81</text><text class="pinfo" x="1332" y="1622" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="1332" y="1634" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="946" y="1734" text-anchor="middle" dominant-baseline="central">57</text><text class="pinfo" x="946" y="1745" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 111</text><text class="pinfo" x="946" y="1756" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mireles Auto Sales</text>
+<text class="pnum" x="946" y="1814" text-anchor="middle" dominant-baseline="central">58</text><text class="pinfo" x="946" y="1825" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 111</text><text class="pinfo" x="946" y="1836" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mireles Auto Sales</text>
+<text class="pnum" x="946" y="1894" text-anchor="middle" dominant-baseline="central">59</text><text class="pinfo" x="946" y="1905" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 111</text><text class="pinfo" x="946" y="1916" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Mireles Auto Sales</text>
+<text class="pnum" x="946" y="1974" text-anchor="middle" dominant-baseline="central">60</text><text class="pinfo" x="946" y="1985" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="1996" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2054" text-anchor="middle" dominant-baseline="central">61</text><text class="pinfo" x="946" y="2065" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="2076" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2134" text-anchor="middle" dominant-baseline="central">62</text><text class="pinfo" x="946" y="2145" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="2156" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2214" text-anchor="middle" dominant-baseline="central">63</text><text class="pinfo" x="946" y="2225" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="2236" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2294" text-anchor="middle" dominant-baseline="central">64</text><text class="pinfo" x="946" y="2305" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="2316" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2374" text-anchor="middle" dominant-baseline="central">65</text><text class="pinfo" x="946" y="2385" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="2396" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2454" text-anchor="middle" dominant-baseline="central">66</text><text class="pinfo" x="946" y="2465" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="946" y="2476" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="946" y="2534" text-anchor="middle" dominant-baseline="central">67</text><text class="pinfo" x="946" y="2545" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="946" y="2556" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="946" y="2614" text-anchor="middle" dominant-baseline="central">68</text><text class="pinfo" x="946" y="2625" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="946" y="2636" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="946" y="2694" text-anchor="middle" dominant-baseline="central">69</text><text class="pinfo" x="946" y="2705" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="946" y="2716" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="946" y="2774" text-anchor="middle" dominant-baseline="central">70</text><text class="pinfo" x="946" y="2785" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="946" y="2796" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="946" y="2854" text-anchor="middle" dominant-baseline="central">71</text><text class="pinfo" x="946" y="2865" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 209</text><text class="pinfo" x="946" y="2876" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">The Auto Zen</text>
+<text class="pnum" x="1350" y="1734" text-anchor="middle" dominant-baseline="central">80</text><text class="pinfo" x="1350" y="1745" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="1350" y="1756" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="1350" y="1814" text-anchor="middle" dominant-baseline="central">79</text><text class="pinfo" x="1350" y="1825" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="1350" y="1836" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="1350" y="1894" text-anchor="middle" dominant-baseline="central">78</text><text class="pinfo" x="1350" y="1905" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="1350" y="1916" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="1350" y="1974" text-anchor="middle" dominant-baseline="central">77</text><text class="pinfo" x="1350" y="1985" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="1350" y="1996" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="pnum" x="1350" y="2054" text-anchor="middle" dominant-baseline="central">76</text><text class="pinfo" x="1350" y="2065" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 212</text><text class="pinfo" x="1350" y="2076" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">So. Cal. Auto House</text>
+<text class="t small" x="1350" y="2145" text-anchor="middle" dominant-baseline="central">75</text>
+<text class="t small" x="1350" y="2225" text-anchor="middle" dominant-baseline="central">74</text>
+<text class="t small" x="1350" y="2305" text-anchor="middle" dominant-baseline="central">73</text>
+<text class="t small" x="1350" y="2385" text-anchor="middle" dominant-baseline="central">Handicap</text>
+<text class="t small" x="1350" y="2545" text-anchor="middle" dominant-baseline="central">Handicap</text>
+<text class="pnum" x="1350" y="2614" text-anchor="middle" dominant-baseline="central">72</text><text class="pinfo" x="1350" y="2625" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Unit 112 & 113</text><text class="pinfo" x="1350" y="2636" text-anchor="middle" dominant-baseline="central" style="font-size:9px;">Wood Crown Inc</text>
+<text class="t small" x="1350" y="2785" text-anchor="middle" dominant-baseline="central">Storage</text>
+<text class="pnum" x="1148" y="2985" text-anchor="middle" dominant-baseline="central">Garage (storage)</text>
+<text class="pinfo" x="1148" y="3000" text-anchor="middle" dominant-baseline="central" style="font-size:11px;">Mr Alikhan Car Detailing</text>
+<text class="pinfo" x="1148" y="3015" text-anchor="middle" dominant-baseline="central" style="font-size:11px;">Alikhan Gelogaev</text>
+<text class="t" x="875" y="976" text-anchor="middle" dominant-baseline="central">52</text>
+<text class="t" x="980" y="1158" text-anchor="middle" dominant-baseline="central">53</text>
+</g>
+</svg>
+</div>
+</div><!-- /parkingPanel -->
+
+</div><!-- /wrap -->
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <h3>Send Selected Units</h3>
+    <p class="sub" id="modalUnitSummary">0 units selected</p>
+
+    <label>Send via</label>
+    <div class="method-row">
+      <button id="methodEmail" class="active">Email</button>
+      <button id="methodSms">SMS / Text</button>
+    </div>
+
+    <label id="contactLabel">Prospect's email address</label>
+    <input type="email" id="contactInput" placeholder="prospect@email.com">
+
+    <label>Message preview</label>
+    <textarea class="msg-preview" id="msgPreview"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" id="copyMsgBtn">Copy Message</button>
+      <button class="btn-primary" id="openSendBtn">Open in Gmail</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="welcomeModalBackdrop">
+  <div class="modal">
+    <button class="modal-close" id="welcomeModalClose">&times;</button>
+    <h3>Send Unit Details</h3>
+    <p class="sub" id="welcomeSummaryLine">Sends the unit number, door code, and mailbox details to the tenant.</p>
+    <input type="hidden" id="welcomeFirstName">
+    <input type="hidden" id="welcomeUnit">
+
+    <label>Send via</label>
+    <div class="method-row">
+      <button id="welcomeMethodEmail" class="active">Email</button>
+      <button id="welcomeMethodSms">SMS / Text</button>
+    </div>
+
+    <label id="welcomeContactLabel">Tenant's email address</label>
+    <input type="email" id="welcomeContactInput" placeholder="tenant@email.com">
+
+    <label>Message preview</label>
+    <textarea class="msg-preview" id="welcomeMsgPreview"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" id="welcomeCopyMsgBtn">Copy Message</button>
+      <button class="btn-primary" id="welcomeOpenSendBtn">Open in Gmail</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const UNITS = {
+"100":{floor:1,status:"vacant",size:780,rent:null,listing:1640,mailbox:"1-7",mailboxCode:"839",code:"0532",parkingAmt:"0",parkingNums:"—"},
+"101":{floor:1,status:"occupied",name:"William Yen",company:"Deltek Corporation",email:"wyen@pacbell.net",phone:"858-361-8024",size:705,rent:900,listing:900,mailbox:"1-8",mailboxCode:"Key",code:"0302",parkingAmt:"0",parkingNums:"—"},
+"102":{floor:1,status:"occupied",name:"Artur Novruzov, Alex Federov",company:"Mikail Auto Sales",email:"mikailautos@gmail.com",phone:"619-882-0815",size:180,rent:1330,listing:620,mailbox:"1-9",mailboxCode:"Key",code:"1007",parkingAmt:"7",parkingNums:"14, 15, 16, 26, 27, 28, 29"},
+"103":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:1050,rent:2650,listing:2250,mailbox:"1-10",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"37, 38, 39, 40"},
+"104":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:720,rent:1800,listing:1800,mailbox:"1-11",mailboxCode:"489",code:"3837",parkingAmt:"0",parkingNums:"—"},
+"105":{floor:1,status:"vacant",size:740,rent:null,listing:1590,mailbox:"1-12",mailboxCode:"296",code:"9897",parkingAmt:"0",parkingNums:"—"},
+"106":{floor:1,status:"occupied",name:"Akmal Armar",company:"Barefeet Podiatry",email:"barefeetpodiatry1@gmail.com",phone:"347-268-5072",size:1130,rent:2100,listing:1900,mailbox:"1-13",mailboxCode:"Key",code:"Key",parkingAmt:"2",parkingNums:"19, 20"},
+"107":{floor:1,status:"occupied",name:"Ami Ramin",company:"To be determined",email:"management@mybonaparte.com",phone:"310-985-5135",size:1050,rent:2250,listing:2250,mailbox:"1-14",mailboxCode:"432",code:"6674",parkingAmt:"0",parkingNums:"—"},
+"108":{floor:1,status:"occupied",name:"Dana Horne",company:"Dana Horne Realty",email:"teamdana@danahornerealty.com",phone:"858-945-3004",size:1115,rent:1980,listing:1560,mailbox:"1-15",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"109":{floor:1,status:"vacant",size:90,rent:null,listing:440,mailbox:"1-16",mailboxCode:"149",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"110":{floor:1,status:"occupied",name:"Joao Gabriel Luna Ribeiro",company:"Vortex",email:"blima9@outlook.com",phone:"425-466-3763",size:215,rent:620,listing:620,mailbox:"2-1",mailboxCode:"121",code:"7876",parkingAmt:"1",parkingNums:"46"},
+"111":{floor:1,status:"occupied",name:"Roberto Mireles",company:"Mireles Auto Sales Inc",email:"mirwestinc@gmail.com",phone:"619-227-7712",size:197,rent:1060,listing:590,mailbox:"2-2",mailboxCode:"231",code:"Key",parkingAmt:"3",parkingNums:"57, 58, 59"},
+"112":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown Inc",email:"frwfuller@aol.com",phone:"858-361-8117",size:460,rent:835,listing:835,mailbox:"2-3",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"72"},
+"113":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown Inc",email:"frwfuller@aol.com",phone:"858-361-8118",size:460,rent:835,listing:835,mailbox:"2-3",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"114":{floor:1,status:"occupied",name:"Jonathan Smith-Gonzalez",company:"Aprisa Print Services LLC",email:"jonathansmithg@aprisaprintservices.com",phone:"619-320-8093",size:198,rent:580,listing:580,mailbox:"2-5",mailboxCode:"578",code:"2021",parkingAmt:"0",parkingNums:"—"},
+"115":{floor:1,status:"occupied",name:"Reza Badei",company:"RGR Auto Sales",email:"rezabasd@gmail.com",phone:"858-349-0551",size:170,rent:null,listing:520,mailbox:"2-6",mailboxCode:"789",code:"Key",parkingAmt:"2",parkingNums:"—"},
+"116":{floor:1,status:"occupied",name:"William M. Zondorak",company:"William M. Zondorak, Bill Zondorak",email:"wmz4010a@gmail.com",phone:"619-261-0687",size:345,rent:600,listing:600,mailbox:"2-7",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"23"},
+"117":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:160,rent:500,listing:500,mailbox:"2-8",mailboxCode:"386",code:"6734",parkingAmt:"0",parkingNums:"—"},
+"118":{floor:1,status:"occupied",name:"Aleksander Major",company:"Euro Auto Group",email:"euroautogroupsd@yahoo.com",phone:"619-861-6243",size:100,rent:500,listing:500,mailbox:"2-9",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"48"},
+"119":{floor:1,status:"occupied",name:"Aleksandra Major",company:"Continental Motors LLC",email:"continentalmotorsllc@yahoo.com",phone:"619-861-6243",size:85,rent:500,listing:500,mailbox:"2-10",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"120":{floor:1,status:"occupied",name:"Mikhail Makhmudov",company:"Favorite Auto Inc",email:"superglider2000@gmail.com",phone:"858-214-9046",size:90,rent:1600,listing:700,mailbox:"2-10",mailboxCode:"Key",code:"Key",parkingAmt:"10",parkingNums:"1, 2, 3, 4, 5, 6, 7, 8, 9, 10"},
+"121":{floor:1,status:"occupied",name:"Shirin Tahbaz",company:"Sweet Autos",email:"sweettautos@yahoo.com",phone:"858-376-9310",size:175,rent:600,listing:600,mailbox:"2-11",mailboxCode:"247",code:"3834",parkingAmt:"0",parkingNums:"—"},
+"122":{floor:1,status:"other",size:null,rent:null,listing:null,mailbox:"—",mailboxCode:"909",code:"0909",parkingAmt:"0",parkingNums:"—"},
+"201":{floor:2,status:"vacant",size:1000,rent:null,listing:2200,mailbox:"2-13",mailboxCode:"648",code:"9498",parkingAmt:"0",parkingNums:"—"},
+"202":{floor:2,status:"occupied",name:"Andrew or Benne Kossin",company:"LA Acting Studio SD",email:"actingcoachsd@gmail.com",phone:"818-521-5337",size:2675,rent:6872,listing:6872,mailbox:"2-14",mailboxCode:"Key",code:"3536",parkingAmt:"2",parkingNums:"17, 18"},
+"203":{floor:2,status:"vacant",size:980,rent:null,listing:2100,mailbox:"2-15",mailboxCode:"667",code:"3435",parkingAmt:"0",parkingNums:"—"},
+"204":{floor:2,status:"occupied",name:"Cindy Chen",company:"Haappy Daance",email:"cindy.chen@haappydaance.com",phone:"213-309-7807",size:1200,rent:2100,listing:2250,mailbox:"2-16",mailboxCode:"737",code:"1945",parkingAmt:"0",parkingNums:"—"},
+"206":{floor:2,status:"occupied",name:"Andrew or Benne Kossin",company:"LA Acting Studio SD",email:"actingcoachsd@gmail.com",phone:"818-521-5337",size:1090,rent:0,listing:2290,mailbox:"2-2",mailboxCode:"784",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"207":{floor:2,status:"vacant",size:270,rent:null,listing:655,mailbox:"2-3",mailboxCode:"456",code:"2023",parkingAmt:"0",parkingNums:"—"},
+"208":{floor:2,status:"occupied",name:"Erica Robinson & Nobel Buchannon",company:"KOK Auto Sales",email:"ericarob208@gmail.com",phone:"678-662-2155",size:190,rent:800,listing:700,mailbox:"2-4",mailboxCode:"Key",code:"8890",parkingAmt:"1",parkingNums:"51"},
+"209":{floor:2,status:"occupied",name:"Yevhenii Dobravskyi",company:"The Auto Zen",email:"royalnet.kh@gmail.com",phone:"858-688-7406",size:190,rent:1760,listing:620,mailbox:"2-5",mailboxCode:"Key",code:"Key",parkingAmt:"12",parkingNums:"81, 82, 83, 84, 67, 68, 69, 70, 71, 31, 32, 33"},
+"210":{floor:2,status:"occupied",name:"Darren M. Domilos",company:"Former Worthy",email:"dmdomilos@gmail.com",phone:"858-652-2508",size:160,rent:700,listing:700,mailbox:"2-6",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"211":{floor:2,status:"occupied",name:"Alexander Nimley",company:"Triton Motors LLC",email:"alexnimley@gmail.com",phone:"619-919-8080",size:175,rent:750,listing:650,mailbox:"2-7",mailboxCode:"Key",code:"2324",parkingAmt:"1",parkingNums:"35"},
+"212":{floor:2,status:"occupied",name:"Ali Askandar",company:"Southern California Auto House",email:"southerncalautohouse@gmail.com",phone:"619-571-2202",size:300,rent:2180,listing:680,mailbox:"2-8",mailboxCode:"Key",code:"Key",parkingAmt:"15",parkingNums:"54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 76, 77, 78, 79, 80"},
+"213":{floor:2,status:"occupied",name:"Haley Delgado",company:"LVH Lending LLC",email:"schmaltz226@hotmail.com",phone:"650-448-4688",size:198,rent:520,listing:520,mailbox:"3-9",mailboxCode:"242",code:"3334",parkingAmt:"0",parkingNums:"—"},
+"214":{floor:2,status:"occupied",name:"Benny Lewis",company:"Klassik Cars",email:"blewissr@gmail.com",phone:"619-917-2909",size:114,rent:750,listing:650,mailbox:"3-10",mailboxCode:"Key",code:"8983",parkingAmt:"1",parkingNums:"50"},
+"215":{floor:2,status:"occupied",name:"Lupita Rivas Alvarez",company:"Work Force LLC",email:"realitycheck41510@gmail.com",phone:"650-213-2386",size:210,rent:700,listing:600,mailbox:"3-11",mailboxCode:"589",code:"9495",parkingAmt:"0",parkingNums:"—"},
+"216":{floor:2,status:"occupied",name:"Juan Colorado Clavijo",company:"Picture Co",email:"amandacoloradophoto@gmail.com",phone:"619-438-4417",size:290,rent:715,listing:715,mailbox:"3-12",mailboxCode:"398",code:"2627",parkingAmt:"0",parkingNums:"—"},
+"217":{floor:2,status:"vacant",size:70,rent:null,listing:500,mailbox:"3-13",mailboxCode:"Key",code:"2840",parkingAmt:"0",parkingNums:"—"},
+"218":{floor:2,status:"vacant",size:195,rent:null,listing:590,mailbox:"2-14",mailboxCode:"371",code:"9495",parkingAmt:"0",parkingNums:"—"},
+"219":{floor:2,status:"vacant",size:175,rent:null,listing:530,mailbox:"3-15",mailboxCode:"630",code:"2021",parkingAmt:"0",parkingNums:"—"},
+"220":{floor:2,status:"occupied",name:"Dorian Vaknin",company:"Nova Remodeling Inc",email:"dorivak12@gmail.com",phone:"858-905-4332",size:300,rent:720,listing:720,mailbox:"3-16",mailboxCode:"218",code:"1412",parkingAmt:"0",parkingNums:"—"},
+"221":{floor:2,status:"occupied",name:"Abdullayev Nijat",company:"Nijat Abdullayev, Black Limo LLC",email:"abnijat@gmail.com",phone:"959-222-2262",size:160,rent:550,listing:450,mailbox:"4-1",mailboxCode:"530",code:"2022",parkingAmt:"1",parkingNums:"34"},
+"300":{floor:3,status:"vacant",size:2350,rent:null,listing:4850,mailbox:"4-2",mailboxCode:"112",code:"8687",parkingAmt:"0",parkingNums:"—"},
+"301":{floor:3,status:"vacant",size:1000,rent:null,listing:2500,mailbox:"4-3",mailboxCode:"699",code:"5958",parkingAmt:"0",parkingNums:"—"},
+"302":{floor:3,status:"occupied",name:"Armandoo Marte",company:"Armandoo Marte & Jennifer Isales",email:"amarte5711@gmail.com",phone:"619-288-7151",size:1320,rent:2500,listing:2500,mailbox:"4-4",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"304":{floor:3,status:"occupied",name:"Amir Hashemi",company:"1298 Studios",email:"amirhashemi01@gmail.com",phone:"858-366-3494",size:1300,rent:2700,listing:2700,mailbox:"4-6",mailboxCode:"958",code:"4543",parkingAmt:"0",parkingNums:"—"},
+"307":{floor:3,status:"occupied",name:"Kasandra Avila",company:"Zen Zone Wellness",email:"kcavila6@gmail.com",phone:"805-509-4163",size:260,rent:645,listing:645,mailbox:"4-10",mailboxCode:"430",code:"2928",parkingAmt:"0",parkingNums:"—"},
+"308":{floor:3,status:"vacant",size:215,rent:null,listing:620,mailbox:"4-11",mailboxCode:"619",code:"2390",parkingAmt:"0",parkingNums:"—"},
+"309":{floor:3,status:"occupied",name:"Peng Li",company:"A & D Beauty Studio",email:"mumumama615@gmail.com",phone:"707-567-1569",size:210,rent:600,listing:600,mailbox:"4-12",mailboxCode:"189",code:"8831",parkingAmt:"1",parkingNums:"36"},
+"310":{floor:3,status:"vacant",size:180,rent:null,listing:700,mailbox:"4-13",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"311":{floor:3,status:"vacant",size:175,rent:null,listing:530,mailbox:"4-14",mailboxCode:"812",code:"2745",parkingAmt:"0",parkingNums:"—"},
+"312":{floor:3,status:"occupied",name:"Linlin Yang",company:"Timenergy LLC",email:"sales.us@relish.fit",phone:"858-305-3128",size:60,rent:360,listing:360,mailbox:"4-15",mailboxCode:"675",code:"8374",parkingAmt:"0",parkingNums:"—"},
+"313":{floor:3,status:"occupied",name:"Kelvin Cook",company:"Jamacha Auto Sale Sales",email:"jamachaautosales@gmail.com",phone:"619-203-6074",size:150,rent:615,listing:615,mailbox:"4-16",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"314":{floor:3,status:"occupied",name:"David Love",company:"Love Cars",email:"dlove1947@gmail.com",phone:"619-263-1533",size:110,rent:585,listing:585,mailbox:"5-1",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"49"},
+"315":{floor:3,status:"occupied",name:"Kishi Akhmedov",company:"Fix It Pro Appliance Repair",email:"kihamamu@gmail.com",phone:"619-770-4400",size:108,rent:430,listing:430,mailbox:"5-2",mailboxCode:"417",code:"8227",parkingAmt:"2",parkingNums:"21, 22"},
+"316":{floor:3,status:"vacant",size:83,rent:null,listing:400,mailbox:"5-3",mailboxCode:"642",code:"5457",parkingAmt:"0",parkingNums:"—"},
+"317":{floor:3,status:"occupied",name:"Abdal-Rahman Al-Araj",company:"Rai's Auto Collection LLC",email:"info@raisautocollection.com",phone:"714-757-6218",size:135,rent:485,listing:530,mailbox:"5-4",mailboxCode:"285",code:"4845",parkingAmt:"0",parkingNums:"—"},
+"318":{floor:3,status:"vacant",size:80,rent:null,listing:400,mailbox:"5-5",mailboxCode:"560",code:"3636",parkingAmt:"0",parkingNums:"—"},
+"319":{floor:3,status:"vacant",size:198,rent:null,listing:740,mailbox:"5-6",mailboxCode:"307",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"320":{floor:3,status:"vacant",size:165,rent:null,listing:515,mailbox:"5-7",mailboxCode:"884",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"321":{floor:3,status:"vacant",size:232,rent:null,listing:635,mailbox:"5-8",mailboxCode:"Key",code:"4445",parkingAmt:"0",parkingNums:"—"},
+"322":{floor:3,status:"occupied",name:"John D. Heinze",company:"Sai System Technologies",email:"johnburgessdorian@gmail.com",phone:"858-344-8509",size:125,rent:625,listing:625,mailbox:"5-9",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"323":{floor:3,status:"occupied",name:"Aslan Abazekhov",company:"Unicus Auto Dealer",email:"mycalifornia@yahoo.com",phone:"949-307-7882",size:150,rent:495,listing:495,mailbox:"5-10",mailboxCode:"438",code:"3535",parkingAmt:"0",parkingNums:"—"},
+"324":{floor:3,status:"vacant",size:140,rent:null,listing:700,mailbox:"5-11",mailboxCode:"923",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"325":{floor:3,status:"occupied",name:"Linval Howard Jr",company:"Revline Motors LLC",email:"linval.ahoward@gmail.com",phone:"315-832-1337",size:95,rent:500,listing:440,mailbox:"5-12",mailboxCode:"282",code:"4243",parkingAmt:"1",parkingNums:"45"},
+"326":{floor:3,status:"occupied",name:"Damir Subeev",company:"S-Auto Grpop",email:"sautogroup324@gmail.com",phone:"858-261-4174",size:105,rent:465,listing:465,mailbox:"5-13",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"327":{floor:3,status:"vacant",size:80,rent:null,listing:400,mailbox:"5-14",mailboxCode:"464",code:"3945",parkingAmt:"0",parkingNums:"—"},
+"328":{floor:3,status:"occupied",name:"Anton Khomiakov",company:"Siberian Auto Repair",email:"siberianautorepair@gmail.com",phone:"858-380-7006",size:170,rent:585,listing:520,mailbox:"5-15",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"329":{floor:3,status:"occupied",name:"Jordan Gray",company:"Ophelia Medical Group",email:"jordan@ophelia.com",phone:"215-585-2144",size:85,rent:505,listing:505,mailbox:"5-16",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"—"},
+"330":{floor:3,status:"vacant",size:375,rent:null,listing:790,mailbox:"—",mailboxCode:"N/A",code:"2627",parkingAmt:"0",parkingNums:"—"}
+};
+</script>
+<script>
+const money = n => n==null ? "—" : "$"+n.toLocaleString();
+const sqft = n => n==null ? "—" : n.toLocaleString()+" sq ft";
+const codeDisp = c => c ? c : "—";
+const displayPrice = d => (d.status==="occupied" && d.rent!=null) ? d.rent : d.listing;
+
+// ---------- Color every unit on every floor by status ----------
+function paintUnits(){
+  const greyUnits = new Set(["105","109","122","320","324","321"]);
+  document.querySelectorAll('.unit').forEach(el=>{
+    const u = el.getAttribute('data-u');
+    const d = UNITS[u];
+    if(!d) return;
+    if(greyUnits.has(u)){
+      el.setAttribute('fill','var(--other-fill)');
+      el.setAttribute('stroke','var(--other-stroke)');
+      el.setAttribute('stroke-width','1');
+    } else if(d.status==="occupied"){
+      el.setAttribute('fill','var(--occ-fill)');
+      el.setAttribute('stroke','var(--occ-stroke)');
+      el.setAttribute('stroke-width','1');
+    } else {
+      el.setAttribute('fill','var(--vac-fill)');
+      el.setAttribute('stroke','var(--vac-stroke)');
+      el.setAttribute('stroke-width','1');
+    }
+  });
+}
+paintUnits();
+
+// ---------- Selection overlay on the map (dark grey for toggled vacant units) ----------
+function updateMapSelectionVisuals(){
+  if(typeof selected === 'undefined') return;
+  paintUnits();
+  // remove any existing selection badges first
+  document.querySelectorAll('.selection-badge').forEach(b=>b.remove());
+  document.querySelectorAll('.unit').forEach(el=>{
+    const u = el.getAttribute('data-u');
+    if(selected.has(u)){
+      el.setAttribute('fill','rgba(10,108,255,0.38)');
+      el.setAttribute('stroke','#0A6CFF');
+      el.setAttribute('stroke-width','5');
+      const svg = el.ownerSVGElement;
+      if(svg){
+        const bbox = el.getBBox();
+        const cx = bbox.x + bbox.width/2;
+        const cy = bbox.y + bbox.height/2;
+        const ns = "http://www.w3.org/2000/svg";
+        const badge = document.createElementNS(ns,"circle");
+        badge.setAttribute("cx", cx);
+        badge.setAttribute("cy", cy);
+        badge.setAttribute("r", 15);
+        badge.setAttribute("fill", "#0A6CFF");
+        badge.setAttribute("class", "selection-badge");
+        badge.style.pointerEvents = "none";
+        const check = document.createElementNS(ns,"text");
+        check.setAttribute("x", cx);
+        check.setAttribute("y", cy+1);
+        check.setAttribute("text-anchor", "middle");
+        check.setAttribute("dominant-baseline", "central");
+        check.setAttribute("fill", "#fff");
+        check.setAttribute("font-size", "18");
+        check.setAttribute("font-weight", "700");
+        check.setAttribute("class", "selection-badge");
+        check.style.pointerEvents = "none";
+        check.textContent = "\u2713";
+        svg.appendChild(badge);
+        svg.appendChild(check);
+      }
+    }
+  });
+}
+
+// ---------- Stats ----------
+function renderStats(){
+  const all = Object.keys(UNITS);
+  const occ = all.filter(u=>UNITS[u].status==="occupied");
+  const vac = all.filter(u=>UNITS[u].status==="vacant");
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="num">${all.length}</div><div class="lbl">Total Units</div></div>
+    <div class="stat-card occ"><div class="num">${occ.length}</div><div class="lbl">Occupied</div></div>
+    <div class="stat-card vac"><div class="num">${vac.length}</div><div class="lbl">Vacant</div></div>
+  `;
+}
+renderStats();
+
+// ---------- Detail panel ----------
+function showDetail(u){
+  const d = UNITS[u];
+  const panel = document.getElementById('detail-panel');
+  panel.classList.remove('empty');
+  const isOcc = d.status==="occupied";
+  const isOther = d.status==="other";
+  const storageUnits = new Set(["105","109","320","324","321"]);
+  const isStorage = storageUnits.has(u);
+  const isManager = u==="122";
+  let badge, leaseLabel;
+  if(isStorage){ badge = `<span class="dp-badge other">STORAGE</span>`; leaseLabel = "Storage"; }
+  else if(isManager){ badge = `<span class="dp-badge other">MANAGER OFFICE</span>`; leaseLabel = "Management office"; }
+  else if(isOcc){ badge = `<span class="dp-badge occ">OCCUPIED</span>`; leaseLabel = "Occupied"; }
+  else if(isOther){ badge = `<span class="dp-badge vac">NOT LEASABLE</span>`; leaseLabel = "Not leasable"; }
+  else { badge = `<span class="dp-badge vac">VACANT</span>`; leaseLabel = "Vacant"; }
+  let rows = "";
+  rows += `<tr><td class="k">Lease status</td><td class="v">${leaseLabel}</td></tr>`;
+  if(isOcc){
+    rows += `<tr><td class="k">Business name</td><td class="v">${d.company||"—"}</td></tr>`;
+    rows += `<tr><td class="k">Tenant name</td><td class="v">${d.name||"—"}</td></tr>`;
+    rows += `<tr><td class="k">Tenant email</td><td class="v"><a href="mailto:${d.email}">${d.email||"—"}</a></td></tr>`;
+    rows += `<tr><td class="k">Tenant phone</td><td class="v">${d.phone||"—"}</td></tr>`;
+  }
+  rows += `<tr><td class="k">Floor</td><td class="v">${d.floor}</td></tr>`;
+  rows += `<tr><td class="k">Size</td><td class="v">${sqft(d.size)}</td></tr>`;
+  rows += `<tr><td class="k">Rent</td><td class="v">${d.rent==null?"—":money(d.rent)+"/mo"}</td></tr>`;
+  rows += `<tr><td class="k">Listing price</td><td class="v">${d.listing==null?"—":money(d.listing)}</td></tr>`;
+  rows += `<tr><td class="k">Mailbox location</td><td class="v">${d.mailbox||"—"}</td></tr>`;
+  rows += `<tr><td class="k">Mailbox code</td><td class="v">${d.mailboxCode||"—"}</td></tr>`;
+  rows += `<tr><td class="k">Door lock code</td><td class="v">${codeDisp(d.code)}</td></tr>`;
+  rows += `<tr><td class="k">Parking spaces rented</td><td class="v">${d.parkingAmt||"0"}</td></tr>`;
+  rows += `<tr><td class="k">Parking space number(s)</td><td class="v">${d.parkingNums||"—"}</td></tr>`;
+  const isSelected = selected.has(u);
+  const selectBtnLabel = isSelected ? "\u2713 Selected for Prospect" : "Select for Prospect";
+  panel.innerHTML = `<div class="dp-head"><div class="dp-title">Unit ${u}</div><div style="display:flex;align-items:center;gap:10px;">${badge}<button id="closeDetailBtn" aria-label="Close" style="appearance:none;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-secondary);padding:0 2px;">&times;</button></div></div><table>${rows}</table>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+      <button id="detailSelectBtn" class="chip ${isSelected?'active':''}" style="padding:8px 14px;font-size:12.5px;">${selectBtnLabel}</button>
+      <button id="detailSendDetailsBtn" class="chip" style="padding:8px 16px;font-size:12.5px;">Send Details</button>
+    </div>
+    <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <label style="font-size:12.5px;font-weight:600;display:block;margin-bottom:6px;">Send this unit to a prospect</label>
+      <div style="display:flex;gap:8px;">
+        <input type="email" id="detailProspectEmail" placeholder="prospect@email.com" style="flex:1;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;">
+        <button id="detailSendProspectBtn" class="chip" style="padding:8px 14px;font-size:12.5px;white-space:nowrap;">Send</button>
+      </div>
+    </div>`;
+  document.getElementById('closeDetailBtn').addEventListener('click', closeDetail);
+  document.getElementById('detailSendDetailsBtn').addEventListener('click', ()=> openWelcomeModalForUnit(u));
+  document.getElementById('detailSelectBtn').addEventListener('click', ()=>{
+    if(selected.has(u)) selected.delete(u); else selected.add(u);
+    updateSelectionUI();
+    showDetail(u);
+  });
+  document.getElementById('detailSendProspectBtn').addEventListener('click', ()=>{
+    selected.add(u);
+    updateSelectionUI();
+    const email = document.getElementById('detailProspectEmail').value.trim();
+    openModal();
+    if(email) document.getElementById('contactInput').value = email;
+  });
+  panel.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function closeDetail(){
+  const panel = document.getElementById('detail-panel');
+  panel.classList.add('empty');
+  panel.innerHTML = 'Click any unit on a floor plan below to see its details.';
+}
+function showMultiSelection(){
+  const panel = document.getElementById('detail-panel');
+  panel.classList.remove('empty');
+  const list = Array.from(selected).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  panel.innerHTML = `<div class="dp-head">
+      <div class="dp-title">${list.length} Units Toggled</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="clearToggleBtn" class="chip" style="white-space:nowrap;">Clear</button>
+        <button id="mapSendBtn" class="chip" style="background:var(--text-accent);color:#fff;border-color:var(--text-accent);white-space:nowrap;">Send to Prospect</button>
+        <button id="closeDetailBtn" aria-label="Close" style="appearance:none;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-secondary);padding:0 2px;">&times;</button>
+      </div>
+    </div>
+    <p style="margin:8px 0 0;font-size:13.5px;color:var(--text-secondary);">${list.join(", ")}</p>`;
+  document.getElementById('closeDetailBtn').addEventListener('click', closeDetail);
+  document.getElementById('mapSendBtn').addEventListener('click', openModal);
+  document.getElementById('clearToggleBtn').addEventListener('click', ()=>{
+    selected.clear();
+    updateSelectionUI();
+    closeDetail();
+  });
+  panel.scrollIntoView({behavior:"smooth", block:"start"});
+}
+document.querySelectorAll('.unit').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const u = el.getAttribute('data-u');
+    const d = UNITS[u];
+    const greyUnits = new Set(["105","109","122","320","324","321"]);
+    if(d && d.status==="vacant" && !greyUnits.has(u)){
+      const wasSelected = selected.has(u);
+      if(wasSelected) selected.delete(u); else selected.add(u);
+      updateSelectionUI();
+      if(!wasSelected && selected.size===1){
+        showDetail(u);
+      } else if(selected.size===0){
+        closeDetail();
+      } else {
+        showMultiSelection();
+      }
+      return;
+    }
+    showDetail(u);
+  });
+});
+</script>
+<script>
+// ---------- Unit list: tabs, sort, filter, selection ----------
+let currentTab = "all";
+let sortMode = null; // 'az' | 'za' | 'size' | 'rent'
+let selected = new Set();
+let showOnlySelected = false;
+
+function unitList(){
+  let list = Object.keys(UNITS);
+  if(currentTab==="vacant") list = list.filter(u=>UNITS[u].status==="vacant");
+  if(currentTab==="occupied") list = list.filter(u=>UNITS[u].status==="occupied");
+  if(showOnlySelected) list = list.filter(u=>selected.has(u));
+  if(sortMode==="az") list.sort((a,b)=> a.localeCompare(b,undefined,{numeric:true}));
+  if(sortMode==="za") list.sort((a,b)=> b.localeCompare(a,undefined,{numeric:true}));
+  if(sortMode==="size") list.sort((a,b)=> (UNITS[b].size||0)-(UNITS[a].size||0));
+  if(sortMode==="rent") list.sort((a,b)=> (displayPrice(UNITS[b])||0)-(displayPrice(UNITS[a])||0));
+  if(!sortMode) list.sort((a,b)=> a.localeCompare(b,undefined,{numeric:true}));
+  return list;
+}
+
+function renderTable(){
+  const body = document.getElementById('unitTableBody');
+  const list = unitList();
+  const storageUnits = new Set(["105","109","320","324","321"]);
+  body.innerHTML = list.map(u=>{
+    const d = UNITS[u];
+    const checked = selected.has(u) ? "checked" : "";
+    const rowSel = selected.has(u) ? "is-selected" : "";
+    let pill;
+    if(storageUnits.has(u)) pill = `<span class="status-pill other">STORAGE</span>`;
+    else if(u==="122") pill = `<span class="status-pill other">MANAGER OFFICE</span>`;
+    else if(d.status==="occupied") pill = `<span class="status-pill occ">OCCUPIED</span>`;
+    else pill = `<span class="status-pill vac">VACANT</span>`;
+    return `<tr class="${rowSel}" data-row="${u}">
+      <td><input type="checkbox" class="rowChk" data-u="${u}" ${checked}></td>
+      <td><strong>${u}</strong></td>
+      <td class="num">${sqft(d.size)}</td>
+      <td class="num">${money(displayPrice(d))}</td>
+      <td>${codeDisp(d.code)}</td>
+      <td>${pill}</td>
+      <td><button class="chip rowWelcomeBtn" data-u="${u}" style="padding:4px 9px;font-size:11px;">Send Details</button></td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll('.rowChk').forEach(chk=>{
+    chk.addEventListener('change', ()=>{
+      const u = chk.getAttribute('data-u');
+      if(chk.checked) selected.add(u); else selected.delete(u);
+      updateSelectionUI();
+    });
+  });
+  body.querySelectorAll('.rowWelcomeBtn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      openWelcomeModalForUnit(btn.getAttribute('data-u'));
+    });
+  });
+  body.querySelectorAll('tr[data-row]').forEach(tr=>{
+    tr.addEventListener('click', (e)=>{
+      if(e.target.tagName==='INPUT' || e.target.classList.contains('rowWelcomeBtn')) return;
+      const u = tr.getAttribute('data-row');
+      showDetail(u);
+    });
+  });
+}
+
+function updateSelectionUI(){
+  document.getElementById('selCount').textContent = selected.size + " selected";
+  document.getElementById('sendBtn').disabled = selected.size===0;
+  const mapBtn = document.getElementById('mapSendBtn');
+  if(mapBtn){
+    mapBtn.textContent = "Send to Prospect";
+  }
+  renderTable();
+  updateMapSelectionVisuals();
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = btn.getAttribute('data-tab');
+    renderTable();
+  });
+});
+
+function setSort(mode, btnId){
+  sortMode = mode;
+  document.querySelectorAll('#sortAZ,#sortZA,#sortSize,#sortRent').forEach(b=>b.classList.remove('active'));
+  document.getElementById(btnId).classList.add('active');
+  renderTable();
+}
+document.getElementById('sortAZ').addEventListener('click', ()=> setSort('az','sortAZ'));
+document.getElementById('sortZA').addEventListener('click', ()=> setSort('za','sortZA'));
+document.getElementById('sortSize').addEventListener('click', ()=> setSort('size','sortSize'));
+document.getElementById('sortRent').addEventListener('click', ()=> setSort('rent','sortRent'));
+
+document.getElementById('showSelectedBtn').addEventListener('click', function(){
+  showOnlySelected = !showOnlySelected;
+  this.classList.toggle('active', showOnlySelected);
+  renderTable();
+});
+
+document.getElementById('clearFiltersBtn').addEventListener('click', ()=>{
+  currentTab="all"; sortMode=null; selected=new Set(); showOnlySelected=false;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="all"]').classList.add('active');
+  document.querySelectorAll('#sortAZ,#sortZA,#sortSize,#sortRent').forEach(b=>b.classList.remove('active'));
+  document.getElementById('showSelectedBtn').classList.remove('active');
+  updateSelectionUI();
+});
+
+renderTable();
+</script>
+<script>
+// ---------- Send Selected Units modal ----------
+let sendMethod = "email";
+
+function generateMessage(){
+  const units = Array.from(selected).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const blocks = units.map(u=>{
+    const d = UNITS[u];
+    const price = displayPrice(d);
+    return `Unit ${u}\nSize: ${d.size==null?"—":d.size} sq. ft.\nRent: ${price==null?"—":"$"+price.toLocaleString()}/month\nDoor Code: ${d.code||"—"}`;
+  }).join("\n\n");
+
+  return `Hey, welcome to 6920 Miramar Road! \u{1F44B}
+
+Please feel free to head over and self-tour the following available units:
+
+You can tour every day from Monday to Friday, between 9:15 AM and 6:00 PM.
+
+${blocks}
+
+For each unit, you will find the unit number, size, monthly rent, and 4-digit code to enter the unit.
+
+Once you know which unit fits you best, please send me:
+
+- Unit number
+- First and last name
+- Business name
+- Email
+- Phone number
+- Desired move-in date
+
+You will then receive an application through DoorLoop, followed by a quick credit check and, lastly, your lease agreement.
+
+Once the lease is signed and the required payment has been completed, you will receive all the necessary access codes for your unit.
+
+Thank you for considering our building! \u{1F60A}
+
+Questions? Reach us at management@mybonaparte.com.`;
+}
+
+function openModal(){
+  document.getElementById('modalUnitSummary').textContent = selected.size + " unit" + (selected.size===1?"":"s") + " selected: " + Array.from(selected).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).join(", ");
+  document.getElementById('msgPreview').value = generateMessage();
+  document.getElementById('modalBackdrop').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('modalBackdrop').classList.remove('show');
+}
+
+document.getElementById('sendBtn').addEventListener('click', openModal);
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalBackdrop').addEventListener('click', (e)=>{
+  if(e.target.id==='modalBackdrop') closeModal();
+});
+
+function setMethod(m){
+  sendMethod = m;
+  document.getElementById('methodEmail').classList.toggle('active', m==='email');
+  document.getElementById('methodSms').classList.toggle('active', m==='sms');
+  const input = document.getElementById('contactInput');
+  const label = document.getElementById('contactLabel');
+  const openBtn = document.getElementById('openSendBtn');
+  if(m==='email'){
+    input.type='email'; input.placeholder='prospect@email.com';
+    label.textContent="Prospect's email address";
+    openBtn.textContent="Open in Gmail";
+  } else {
+    input.type='tel'; input.placeholder='(555) 555-5555';
+    label.textContent="Prospect's phone number";
+    openBtn.textContent="Open in Messages";
+  }
+}
+document.getElementById('methodEmail').addEventListener('click', ()=>setMethod('email'));
+document.getElementById('methodSms').addEventListener('click', ()=>setMethod('sms'));
+
+document.getElementById('copyMsgBtn').addEventListener('click', ()=>{
+  const msg = document.getElementById('msgPreview').value;
+  navigator.clipboard.writeText(msg).then(()=>{
+    const btn = document.getElementById('copyMsgBtn');
+    const orig = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(()=> btn.textContent = orig, 1500);
+  }).catch(()=>{
+    alert("Could not copy automatically — please select and copy the message manually.");
+  });
+});
+
+document.getElementById('openSendBtn').addEventListener('click', ()=>{
+  const contact = document.getElementById('contactInput').value.trim();
+  const msg = document.getElementById('msgPreview').value;
+  if(!contact){
+    alert(sendMethod==='email' ? "Please enter the prospect's email address." : "Please enter the prospect's phone number.");
+    return;
+  }
+  if(sendMethod==='email'){
+    const subject = encodeURIComponent("Available units at 6920 Miramar Road");
+    const body = encodeURIComponent(msg);
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact)}&cc=management@mybonaparte.com&su=${subject}&body=${body}`, '_blank');
+  } else {
+    const body = encodeURIComponent(msg);
+    window.location.href = `sms:${encodeURIComponent(contact)}?&body=${body}`;
+  }
+});
+</script>
+
+<script>
+// ---------- View switcher (Building Floors / Parking Lot) ----------
+document.querySelectorAll('.view-tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.view-tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    const view = btn.getAttribute('data-view');
+    document.getElementById(view==='floors' ? 'floorsPanel' : 'parkingPanel').classList.add('active');
+  });
+});
+</script>
+
+<script>
+// ---------- Welcome Message (Approved Tenant) modal ----------
+let welcomeMethod = "email";
+
+function generateWelcomeMessage(){
+  const firstName = document.getElementById('welcomeFirstName').value.trim() || "there";
+  const unit = document.getElementById('welcomeUnit').value.trim();
+  const d = UNITS[unit];
+  const doorCode = (d && d.code) ? d.code : "—";
+  const mailboxLoc = (d && d.mailbox) ? d.mailbox : "—";
+  const mailboxCode = (d && d.mailboxCode) ? d.mailboxCode : "—";
+
+  return `Hi ${firstName}, here are the details for your unit:
+
+Your unit number is ${unit || "—"}
+
+To enter, your code is ${doorCode} \u2611\uFE0F
+
+Your mailbox is located across the street from Better Buzz Coffee, and your mailbox is ${mailboxLoc} and your code is ${mailboxCode}
+
+The common trash is located by the parking lot, next to parking space 24.
+
+If you have any requests, please use the DoorLoop portal and we will answer promptly \u{1F60A}
+
+Enjoy!
+
+Questions? Reach us at management@mybonaparte.com.`;
+}
+
+function updateWelcomePreview(){
+  document.getElementById('welcomeMsgPreview').value = generateWelcomeMessage();
+}
+
+function openWelcomeModalForUnit(u){
+  const d = UNITS[u];
+  document.getElementById('welcomeUnit').value = u;
+  if(d && d.status==="occupied" && d.name){
+    document.getElementById('welcomeFirstName').value = d.name.split(" ")[0];
+    document.getElementById('welcomeSummaryLine').textContent = `Unit ${u} — ${d.name} (${d.company})`;
+  } else {
+    document.getElementById('welcomeFirstName').value = "";
+    document.getElementById('welcomeSummaryLine').textContent = `Unit ${u}`;
+  }
+  const contactInput = document.getElementById('welcomeContactInput');
+  if(welcomeMethod==='email'){
+    contactInput.value = (d && d.email && d.email !== "—") ? d.email : "";
+  }
+  document.getElementById('welcomeModalBackdrop').classList.add('show');
+  updateWelcomePreview();
+}
+document.getElementById('welcomeModalClose').addEventListener('click', ()=>{
+  document.getElementById('welcomeModalBackdrop').classList.remove('show');
+});
+document.getElementById('welcomeModalBackdrop').addEventListener('click', (e)=>{
+  if(e.target.id==='welcomeModalBackdrop') document.getElementById('welcomeModalBackdrop').classList.remove('show');
+});
+
+document.getElementById('welcomeFirstName').addEventListener('input', updateWelcomePreview);
+document.getElementById('welcomeUnit').addEventListener('change', updateWelcomePreview);
+
+function setWelcomeMethod(m){
+  welcomeMethod = m;
+  document.getElementById('welcomeMethodEmail').classList.toggle('active', m==='email');
+  document.getElementById('welcomeMethodSms').classList.toggle('active', m==='sms');
+  const input = document.getElementById('welcomeContactInput');
+  const label = document.getElementById('welcomeContactLabel');
+  const openBtn = document.getElementById('welcomeOpenSendBtn');
+  const u = document.getElementById('welcomeUnit').value.trim();
+  const d = UNITS[u];
+  if(m==='email'){
+    input.type='email'; input.placeholder='tenant@email.com';
+    label.textContent="Tenant's email address";
+    openBtn.textContent="Open in Gmail";
+    input.value = (d && d.email && d.email !== "—") ? d.email : "";
+  } else {
+    input.type='tel'; input.placeholder='(555) 555-5555';
+    label.textContent="Tenant's phone number";
+    openBtn.textContent="Open in Messages";
+    input.value = (d && d.phone && d.phone !== "—") ? d.phone : "";
+  }
+}
+document.getElementById('welcomeMethodEmail').addEventListener('click', ()=>setWelcomeMethod('email'));
+document.getElementById('welcomeMethodSms').addEventListener('click', ()=>setWelcomeMethod('sms'));
+
+document.getElementById('welcomeCopyMsgBtn').addEventListener('click', ()=>{
+  const msg = document.getElementById('welcomeMsgPreview').value;
+  navigator.clipboard.writeText(msg).then(()=>{
+    const btn = document.getElementById('welcomeCopyMsgBtn');
+    const orig = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(()=> btn.textContent = orig, 1500);
+  }).catch(()=>{
+    alert("Could not copy automatically — please select and copy the message manually.");
+  });
+});
+
+document.getElementById('welcomeOpenSendBtn').addEventListener('click', ()=>{
+  const contact = document.getElementById('welcomeContactInput').value.trim();
+  const msg = document.getElementById('welcomeMsgPreview').value;
+  if(!contact){
+    alert(welcomeMethod==='email' ? "Please enter the tenant's email address." : "Please enter the tenant's phone number.");
+    return;
+  }
+  if(welcomeMethod==='email'){
+    const subject = encodeURIComponent("Your unit details — 6920 Miramar Road");
+    const body = encodeURIComponent(msg);
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact)}&cc=management@mybonaparte.com&su=${subject}&body=${body}`, '_blank');
+  } else {
+    const body = encodeURIComponent(msg);
+    window.location.href = `sms:${encodeURIComponent(contact)}?&body=${body}`;
+  }
+});
+</script>
+</body>
+</html>
