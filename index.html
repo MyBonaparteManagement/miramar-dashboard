@@ -28,6 +28,8 @@
     --other-stroke:#6B6862;
     --selected-fill:#5A5750;
     --selected-stroke:#2B2A27;
+    --tenant-btn:#2E9E3F;
+    --prospect-btn:#E0548E;
     --vac-text:#8C2E22;
   }
   *{box-sizing:border-box;}
@@ -110,6 +112,10 @@
   }
   button.chip:hover{ background:var(--border); }
   button.chip.active{ background:var(--text-accent); border-color:var(--text-accent); color:#fff; }
+  button.chip.tenant-btn{ background:var(--tenant-btn); border-color:var(--tenant-btn); color:#fff; font-weight:700; }
+  button.chip.tenant-btn:hover{ filter:brightness(0.92); }
+  button.chip.prospect-btn{ background:var(--prospect-btn); border-color:var(--prospect-btn); color:#fff; font-weight:700; }
+  button.chip.prospect-btn:hover{ filter:brightness(0.92); }
   button.chip:disabled{ opacity:.4; cursor:not-allowed; }
   .spacer{ flex:1; }
   #selCount{ font-size:12.5px; color:var(--text-secondary); }
@@ -937,33 +943,29 @@ function showDetail(u){
   rows += `<tr><td class="k">Parking spaces rented</td><td class="v">${d.parkingAmt||"0"}</td></tr>`;
   rows += `<tr><td class="k">Parking space number(s)</td><td class="v">${d.parkingNums||"—"}</td></tr>`;
   const isSelected = selected.has(u);
-  const selectBtnLabel = isSelected ? "\u2713 Selected for Prospect" : "Select for Prospect";
+  let actionBtn = "";
+  if(isOcc){
+    actionBtn = `<button id="detailActionBtn" class="chip tenant-btn" style="padding:9px 18px;font-size:13px;">Send to Tenant</button>`;
+  } else if(!isOther && !isStorage){
+    actionBtn = `<button id="detailActionBtn" class="chip prospect-btn" style="padding:9px 18px;font-size:13px;">Send to Prospect</button>`;
+  }
   panel.innerHTML = `<div class="dp-head"><div class="dp-title">Unit ${u}</div><div style="display:flex;align-items:center;gap:10px;">${badge}<button id="closeDetailBtn" aria-label="Close" style="appearance:none;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-secondary);padding:0 2px;">&times;</button></div></div><table>${rows}</table>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
-      <button id="detailSelectBtn" class="chip ${isSelected?'active':''}" style="padding:8px 14px;font-size:12.5px;">${selectBtnLabel}</button>
-      <button id="detailSendDetailsBtn" class="chip" style="padding:8px 16px;font-size:12.5px;">Send Details</button>
-    </div>
-    <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
-      <label style="font-size:12.5px;font-weight:600;display:block;margin-bottom:6px;">Send this unit to a prospect</label>
-      <div style="display:flex;gap:8px;">
-        <input type="email" id="detailProspectEmail" placeholder="prospect@email.com" style="flex:1;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;">
-        <button id="detailSendProspectBtn" class="chip" style="padding:8px 14px;font-size:12.5px;white-space:nowrap;">Send</button>
-      </div>
+      ${actionBtn}
     </div>`;
   document.getElementById('closeDetailBtn').addEventListener('click', closeDetail);
-  document.getElementById('detailSendDetailsBtn').addEventListener('click', ()=> openWelcomeModalForUnit(u));
-  document.getElementById('detailSelectBtn').addEventListener('click', ()=>{
-    if(selected.has(u)) selected.delete(u); else selected.add(u);
-    updateSelectionUI();
-    showDetail(u);
-  });
-  document.getElementById('detailSendProspectBtn').addEventListener('click', ()=>{
-    selected.add(u);
-    updateSelectionUI();
-    const email = document.getElementById('detailProspectEmail').value.trim();
-    openModal();
-    if(email) document.getElementById('contactInput').value = email;
-  });
+  const actionBtnEl = document.getElementById('detailActionBtn');
+  if(actionBtnEl){
+    actionBtnEl.addEventListener('click', ()=>{
+      if(isOcc){
+        openWelcomeModalForUnit(u);
+      } else {
+        selected.add(u);
+        updateSelectionUI();
+        openModal();
+      }
+    });
+  }
   panel.scrollIntoView({behavior:"smooth", block:"start"});
 }
 function closeDetail(){
@@ -1002,12 +1004,10 @@ document.querySelectorAll('.unit').forEach(el=>{
       const wasSelected = selected.has(u);
       if(wasSelected) selected.delete(u); else selected.add(u);
       updateSelectionUI();
-      if(!wasSelected && selected.size===1){
-        showDetail(u);
-      } else if(selected.size===0){
+      if(wasSelected){
         closeDetail();
       } else {
-        showMultiSelection();
+        showDetail(u);
       }
       return;
     }
@@ -1043,11 +1043,20 @@ function renderTable(){
     const d = UNITS[u];
     const checked = selected.has(u) ? "checked" : "";
     const rowSel = selected.has(u) ? "is-selected" : "";
-    let pill;
-    if(storageUnits.has(u)) pill = `<span class="status-pill other">STORAGE</span>`;
-    else if(u==="122") pill = `<span class="status-pill other">MANAGER OFFICE</span>`;
-    else if(d.status==="occupied") pill = `<span class="status-pill occ">OCCUPIED</span>`;
-    else pill = `<span class="status-pill vac">VACANT</span>`;
+    let pill, actionBtnHtml;
+    if(storageUnits.has(u)){
+      pill = `<span class="status-pill other">STORAGE</span>`;
+      actionBtnHtml = "";
+    } else if(u==="122"){
+      pill = `<span class="status-pill other">MANAGER OFFICE</span>`;
+      actionBtnHtml = "";
+    } else if(d.status==="occupied"){
+      pill = `<span class="status-pill occ">OCCUPIED</span>`;
+      actionBtnHtml = `<button class="chip rowActionBtn tenant-btn" data-u="${u}" data-mode="tenant" style="padding:5px 10px;font-size:11px;">Send to Tenant</button>`;
+    } else {
+      pill = `<span class="status-pill vac">VACANT</span>`;
+      actionBtnHtml = `<button class="chip rowActionBtn prospect-btn" data-u="${u}" data-mode="prospect" style="padding:5px 10px;font-size:11px;">Send to Prospect</button>`;
+    }
     return `<tr class="${rowSel}" data-row="${u}">
       <td><input type="checkbox" class="rowChk" data-u="${u}" ${checked}></td>
       <td><strong>${u}</strong></td>
@@ -1055,7 +1064,7 @@ function renderTable(){
       <td class="num">${money(displayPrice(d))}</td>
       <td>${codeDisp(d.code)}</td>
       <td>${pill}</td>
-      <td class="sticky-col"><button class="chip rowWelcomeBtn" data-u="${u}" style="padding:4px 9px;font-size:11px;">Send Details</button></td>
+      <td class="sticky-col">${actionBtnHtml}</td>
     </tr>`;
   }).join("");
 
@@ -1066,15 +1075,22 @@ function renderTable(){
       updateSelectionUI();
     });
   });
-  body.querySelectorAll('.rowWelcomeBtn').forEach(btn=>{
+  body.querySelectorAll('.rowActionBtn').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
       e.stopPropagation();
-      openWelcomeModalForUnit(btn.getAttribute('data-u'));
+      const u = btn.getAttribute('data-u');
+      if(btn.getAttribute('data-mode')==='tenant'){
+        openWelcomeModalForUnit(u);
+      } else {
+        selected.add(u);
+        updateSelectionUI();
+        openModal();
+      }
     });
   });
   body.querySelectorAll('tr[data-row]').forEach(tr=>{
     tr.addEventListener('click', (e)=>{
-      if(e.target.tagName==='INPUT' || e.target.classList.contains('rowWelcomeBtn')) return;
+      if(e.target.tagName==='INPUT' || e.target.classList.contains('rowActionBtn')) return;
       const u = tr.getAttribute('data-row');
       showDetail(u);
     });
@@ -1144,6 +1160,9 @@ function generateMessage(){
   return `Hey, welcome to 6920 Miramar Road! \u{1F44B}
 
 Please feel free to head over and self-tour the following available units:
+
+Address: 6920 Miramar Road, San Diego, CA 92121
+Get directions: https://maps.google.com/?q=6920+Miramar+Road,+San+Diego,+CA+92121
 
 You can tour every day from Monday to Friday, between 9:15 AM and 6:00 PM.
 
