@@ -463,7 +463,7 @@
       <th class="num" style="width:110px;">Rent / Listing</th>
       <th style="width:100px;">Door Code</th>
       <th style="width:120px;">Status</th>
-      <th class="sticky-col" style="width:110px;"></th>
+      <th class="sticky-col" style="width:132px;"></th>
     </tr>
   </thead>
   <tbody id="unitTableBody"></tbody>
@@ -763,7 +763,7 @@ const UNITS = {
 "112":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown INC",email:"frwfuller@aol.com",phone:"858-361-8117",size:460,rent:835,listing:835,mailbox:"2-3",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"72"},
 "113":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown INC",email:"frwfuller@aol.com",phone:"858-361-8118",size:460,rent:835,listing:835,mailbox:"2- 3",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "114":{floor:1,status:"occupied",name:"Jonathan Smith-gonzalez",company:"Aprisa Print Services LLC",email:"jonathansmithg@aprisaprintservices.com",phone:"619-320-8093",size:198,rent:580,listing:580,mailbox:"2-5",mailboxCode:"578",code:"2021",parkingAmt:"0",parkingNums:"-"},
-"115":{floor:1,status:"vacant",size:170,rent:null,listing:520,mailbox:"2-6",mailboxCode:"789",code:"6745",parkingAmt:"0",parkingNums:"-"},
+"115":{floor:1,status:"occupied",name:"Chad Decker",company:"DEVCO",email:"cd@devco-inc.com",phone:"951-553-8692",size:170,rent:570,listing:520,mailbox:"2-6",mailboxCode:"789",code:"6745",parkingAmt:"0",parkingNums:"-"},
 "116":{floor:1,status:"occupied",name:"William M. Zondorak",company:"William M. Zondorak, Bill Zondorak |",email:"wmz4010a@gmail.com",phone:"619-261-0687",size:345,rent:600,listing:600,mailbox:"2-7",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"23"},
 "117":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:160,rent:500,listing:500,mailbox:"2-8",mailboxCode:"386",code:"6734",parkingAmt:"0",parkingNums:"-"},
 "118":{floor:1,status:"occupied",name:"Aleksander Major",company:"Euro Auto Group",email:"euroautogroupsd@yahoo.com",phone:"619-861-6243",size:100,rent:500,listing:500,mailbox:"2-9",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"48"},
@@ -946,7 +946,7 @@ function showDetail(u){
   let actionBtn = "";
   if(isOcc){
     actionBtn = `<button id="detailActionBtn" class="chip tenant-btn" style="padding:9px 18px;font-size:13px;">Send to Tenant</button>`;
-  } else if(!isOther && !isStorage){
+  } else if(!isOther){
     actionBtn = `<button id="detailActionBtn" class="chip prospect-btn" style="padding:9px 18px;font-size:13px;">Send to Prospect</button>`;
   }
   panel.innerHTML = `<div class="dp-head"><div class="dp-title">Unit ${u}</div><div style="display:flex;align-items:center;gap:10px;">${badge}<button id="closeDetailBtn" aria-label="Close" style="appearance:none;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-secondary);padding:0 2px;">&times;</button></div></div><table>${rows}</table>
@@ -999,8 +999,8 @@ document.querySelectorAll('.unit').forEach(el=>{
   el.addEventListener('click', ()=>{
     const u = el.getAttribute('data-u');
     const d = UNITS[u];
-    const greyUnits = new Set(["105","109","122","320","324","321"]);
-    if(d && d.status==="vacant" && !greyUnits.has(u)){
+    const notToggleable = new Set(["122"]);
+    if(d && d.status==="vacant" && !notToggleable.has(u)){
       const wasSelected = selected.has(u);
       if(wasSelected) selected.delete(u); else selected.add(u);
       updateSelectionUI();
@@ -1046,16 +1046,16 @@ function renderTable(){
     let pill, actionBtnHtml;
     if(storageUnits.has(u)){
       pill = `<span class="status-pill other">STORAGE</span>`;
-      actionBtnHtml = "";
+      actionBtnHtml = `<button class="chip rowActionBtn prospect-btn" data-u="${u}" data-mode="prospect" style="width:118px;padding:5px 4px;font-size:11px;white-space:nowrap;">Send to Prospect</button>`;
     } else if(u==="122"){
       pill = `<span class="status-pill other">MANAGER OFFICE</span>`;
       actionBtnHtml = "";
     } else if(d.status==="occupied"){
       pill = `<span class="status-pill occ">OCCUPIED</span>`;
-      actionBtnHtml = `<button class="chip rowActionBtn tenant-btn" data-u="${u}" data-mode="tenant" style="padding:5px 10px;font-size:11px;">Send to Tenant</button>`;
+      actionBtnHtml = `<button class="chip rowActionBtn tenant-btn" data-u="${u}" data-mode="tenant" style="width:118px;padding:5px 4px;font-size:11px;white-space:nowrap;">Send to Tenant</button>`;
     } else {
       pill = `<span class="status-pill vac">VACANT</span>`;
-      actionBtnHtml = `<button class="chip rowActionBtn prospect-btn" data-u="${u}" data-mode="prospect" style="padding:5px 10px;font-size:11px;">Send to Prospect</button>`;
+      actionBtnHtml = `<button class="chip rowActionBtn prospect-btn" data-u="${u}" data-mode="prospect" style="width:118px;padding:5px 4px;font-size:11px;white-space:nowrap;">Send to Prospect</button>`;
     }
     return `<tr class="${rowSel}" data-row="${u}">
       <td><input type="checkbox" class="rowChk" data-u="${u}" ${checked}></td>
@@ -1162,7 +1162,6 @@ function generateMessage(){
 Please feel free to head over and self-tour the following available units:
 
 Address: 6920 Miramar Road, San Diego, CA 92121
-Get directions: https://maps.google.com/?q=6920+Miramar+Road,+San+Diego,+CA+92121
 
 You can tour every day from Monday to Friday, between 9:15 AM and 6:00 PM.
 
