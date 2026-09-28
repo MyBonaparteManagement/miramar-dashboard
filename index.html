@@ -56,7 +56,7 @@
     position:relative; z-index:1; height:100%;
     padding:0 24px 22px; display:flex; flex-direction:column; justify-content:flex-end;
   }
-  header.hero .hero-logo{ height:38px; width:auto; margin-bottom:14px; }
+  header.hero .hero-logo{ height:38px; width:auto; max-width:100%; align-self:flex-start; margin-bottom:14px; }
   header.hero h1{ font-size:22px; font-weight:700; margin:0 0 5px; color:#fff; letter-spacing:-0.01em; }
   header.hero p{ font-size:12.5px; color:rgba(255,255,255,0.82); margin:0; max-width:640px; }
   @media (max-width: 820px){
@@ -76,12 +76,14 @@
   .stat-card .lbl{ font-size:12px; color:var(--text-secondary); margin-top:2px; }
   .stat-card.occ .num{ color:var(--occ-text); }
   .stat-card.vac .num{ color:var(--vac-text); }
+  .stat-card.oth .num{ color:var(--other-stroke); }
 
   .legend{ display:flex; gap:18px; align-items:center; font-size:12.5px; color:var(--text-secondary); margin-bottom:6px; }
   .legend span{ display:inline-flex; align-items:center; gap:6px; }
   .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
   .swatch.occ{ background:var(--occ-fill); border:1px solid var(--occ-stroke); }
   .swatch.vac{ background:var(--vac-fill); border:1px solid var(--vac-stroke); }
+  .swatch.other{ background:var(--other-fill); border:1px solid var(--other-stroke); }
 
   .floors-scroll{
     display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:22px;
@@ -268,6 +270,7 @@
 <div class="legend">
   <span><span class="swatch occ"></span> Occupied</span>
   <span><span class="swatch vac"></span> Vacant</span>
+  <span><span class="swatch other"></span> Storage / Office</span>
   <span style="margin-left:auto">Click a unit for full details</span>
 </div>
 
@@ -463,6 +466,7 @@
   <button class="tab-btn active" data-tab="all">All Units</button>
   <button class="tab-btn" data-tab="vacant">Vacant</button>
   <button class="tab-btn" data-tab="occupied">Occupied</button>
+  <button class="tab-btn" data-tab="storage">Storage &amp; Office</button>
 </div>
 
 <div class="toolbar">
@@ -778,52 +782,52 @@
 const UNITS = {
 "100":{floor:1,status:"vacant",size:780,rent:null,listing:1640,mailbox:"1-7",mailboxCode:"839",code:"0532",parkingAmt:"0",parkingNums:"-"},
 "101":{floor:1,status:"occupied",name:"William Yen",company:"Deltek Corporation",email:"wyen@pacbell.net",phone:"858-361-8024",size:705,rent:900,listing:900,mailbox:"1-8",mailboxCode:"Key",code:"0302",parkingAmt:"0",parkingNums:"-"},
-"102":{floor:1,status:"occupied",name:"Artur Novruzov Alex Federov",company:"Mikail Auto Sales",email:"mikailautos@gmail.com",phone:"619-882-0815",size:180,rent:1330,listing:620,mailbox:"1-9",mailboxCode:"Key",code:"1007",parkingAmt:"7",parkingNums:"14, 15, 16, 26, 27, 28, 29"},
+"102":{floor:1,status:"occupied",name:"Artur Novruzov & Alex Federov",company:"Mikail Auto Sales",email:"mikailautos@gmail.com",phone:"619-882-0815",size:180,rent:1330,listing:620,mailbox:"1-9",mailboxCode:"Key",code:"1007",parkingAmt:"7",parkingNums:"14, 15, 16, 26, 27, 28, 29"},
 "103":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:1050,rent:2650,listing:2250,mailbox:"1-10",mailboxCode:"Key",code:"Key",parkingAmt:"4",parkingNums:"37, 38, 39, 40"},
 "104":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:720,rent:1800,listing:1800,mailbox:"1-11",mailboxCode:"489",code:"3837",parkingAmt:"0",parkingNums:"-"},
 "105":{floor:1,status:"vacant",size:740,rent:null,listing:1590,mailbox:"1-12",mailboxCode:"296",code:"9897",parkingAmt:"0",parkingNums:"-"},
-"106":{floor:1,status:"occupied",name:"Akmal Armar",company:"Barefeet Podiarory",email:"barefeetpodiatry1@gmail.com",phone:"347-268-5072",size:1130,rent:2100,listing:1900,mailbox:"1-13",mailboxCode:"Key",code:"Key",parkingAmt:"2",parkingNums:"19, 20"},
-"107":{floor:1,status:"occupied",name:"Ami Ramin",company:"To Be Det",email:"management@mybonaparte.com",phone:"310-985-5135",size:1050,rent:2250,listing:2250,mailbox:"1-14",mailboxCode:"432",code:"6674",parkingAmt:"0",parkingNums:"-"},
+"106":{floor:1,status:"occupied",name:"Akmal Armar",company:"Barefeet Podiatry",email:"barefeetpodiatry1@gmail.com",phone:"347-268-5072",size:1130,rent:2100,listing:1900,mailbox:"1-13",mailboxCode:"Key",code:"Key",parkingAmt:"2",parkingNums:"19, 20"},
+"107":{floor:1,status:"occupied",name:"Ami Ramin",company:"To Be Determined",email:"management@mybonaparte.com",phone:"310-985-5135",size:1050,rent:2250,listing:2250,mailbox:"1-14",mailboxCode:"432",code:"6674",parkingAmt:"0",parkingNums:"-"},
 "108":{floor:1,status:"occupied",name:"Dana Horne",company:"Dana Horne Realty",email:"teamdana@danahornerealty.com",phone:"858-945-3004",size:1115,rent:1980,listing:1560,mailbox:"1-15",mailboxCode:"Key",code:"Key",parkingAmt:"2",parkingNums:"21, 22"},
-"109":{floor:1,status:"vacant",size:90,rent:null,listing:440,mailbox:"1-16",mailboxCode:"149",code:"key",parkingAmt:"0",parkingNums:"-"},
+"109":{floor:1,status:"vacant",size:90,rent:null,listing:440,mailbox:"1-16",mailboxCode:"149",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "110":{floor:1,status:"occupied",name:"Joao Gabriel Luna Ribeiro",company:"Vortex",email:"blima9@outlook.com",phone:"425-466-3763",size:215,rent:620,listing:620,mailbox:"2-1",mailboxCode:"121",code:"7876",parkingAmt:"0",parkingNums:"-"},
-"111":{floor:1,status:"occupied",name:"Roberto Mireles",company:"Mireles Auto Sales INC",email:"mirwestinc@gmail.com",phone:"619-227-7712",size:197,rent:1060,listing:590,mailbox:"2-2",mailboxCode:"231",code:"Key",parkingAmt:"3",parkingNums:"57, 58, 59"},
-"112":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown INC",email:"frwfuller@aol.com",phone:"858-361-8117",size:460,rent:835,listing:835,mailbox:"2-3",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"72"},
-"113":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown INC",email:"frwfuller@aol.com",phone:"858-361-8118",size:460,rent:835,listing:835,mailbox:"2- 3",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
-"114":{floor:1,status:"occupied",name:"Jonathan Smith-gonzalez",company:"Aprisa Print Services LLC",email:"jonathansmithg@aprisaprintservices.com",phone:"619-320-8093",size:198,rent:580,listing:580,mailbox:"2-5",mailboxCode:"578",code:"2021",parkingAmt:"0",parkingNums:"-"},
+"111":{floor:1,status:"occupied",name:"Roberto Mireles",company:"Mireles Auto Sales Inc",email:"mirwestinc@gmail.com",phone:"619-227-7712",size:197,rent:1060,listing:590,mailbox:"2-2",mailboxCode:"231",code:"Key",parkingAmt:"3",parkingNums:"57, 58, 59"},
+"112":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown Inc",email:"frwfuller@aol.com",phone:"858-361-8117",size:460,rent:835,listing:835,mailbox:"2-3",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"72"},
+"113":{floor:1,status:"occupied",name:"Francis Fuller",company:"Wood Crown Inc",email:"frwfuller@aol.com",phone:"858-361-8118",size:460,rent:835,listing:835,mailbox:"2-3",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
+"114":{floor:1,status:"occupied",name:"Jonathan Smith-Gonzalez",company:"Aprisa Print Services LLC",email:"jonathansmithg@aprisaprintservices.com",phone:"619-320-8093",size:198,rent:580,listing:580,mailbox:"2-5",mailboxCode:"578",code:"2021",parkingAmt:"0",parkingNums:"-"},
 "115":{floor:1,status:"occupied",name:"Chad Decker",company:"DEVCO",email:"cd@devco-inc.com",phone:"951-553-8692",size:170,rent:570,listing:520,mailbox:"2-6",mailboxCode:"789",code:"6745",parkingAmt:"0",parkingNums:"-"},
-"116":{floor:1,status:"occupied",name:"William M. Zondorak",company:"William M. Zondorak, Bill Zondorak |",email:"wmz4010a@gmail.com",phone:"619-261-0687",size:345,rent:600,listing:600,mailbox:"2-7",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"23"},
+"116":{floor:1,status:"occupied",name:"William M. Zondorak",company:"William M. Zondorak, Bill Zondorak",email:"wmz4010a@gmail.com",phone:"619-261-0687",size:345,rent:600,listing:600,mailbox:"2-7",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"23"},
 "117":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:160,rent:500,listing:500,mailbox:"2-8",mailboxCode:"386",code:"6734",parkingAmt:"0",parkingNums:"-"},
 "118":{floor:1,status:"occupied",name:"Aleksander Major",company:"Euro Auto Group",email:"euroautogroupsd@yahoo.com",phone:"619-861-6243",size:100,rent:500,listing:500,mailbox:"2-9",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"48"},
 "119":{floor:1,status:"occupied",name:"Aleksandra Major",company:"Continental Motors LLC",email:"continentalmotorsllc@yahoo.com",phone:"619-861-6243",size:85,rent:500,listing:500,mailbox:"2-10",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
-"120":{floor:1,status:"occupied",name:"Mikhail Makhmudov",company:"Favorite Auto INC",email:"superglider2000@gmail.com",phone:"858-214-9046",size:90,rent:1600,listing:700,mailbox:"2-10",mailboxCode:"Key",code:"Key",parkingAmt:"10",parkingNums:"1, 2, 3, 4, 5, 6, 7, 8, 9, 10"},
+"120":{floor:1,status:"occupied",name:"Mikhail Makhmudov",company:"Favorite Auto Inc",email:"superglider2000@gmail.com",phone:"858-214-9046",size:90,rent:1600,listing:700,mailbox:"2-10",mailboxCode:"Key",code:"Key",parkingAmt:"10",parkingNums:"1, 2, 3, 4, 5, 6, 7, 8, 9, 10"},
 "121":{floor:1,status:"occupied",name:"Shirin Tahbaz",company:"Sweet Autos",email:"sweettautos@yahoo.com",phone:"858-376-9310",size:175,rent:600,listing:600,mailbox:"2-11",mailboxCode:"247",code:"3834",parkingAmt:"0",parkingNums:"-"},
 "122":{floor:1,status:"other",size:null,rent:null,listing:null,mailbox:"—",mailboxCode:"909",code:"0909",parkingAmt:"0",parkingNums:"-"},
 "201":{floor:2,status:"vacant",size:1000,rent:null,listing:2200,mailbox:"2-13",mailboxCode:"648",code:"9498",parkingAmt:"0",parkingNums:"-"},
-"202":{floor:2,status:"occupied",name:"Andrew Or Benne Kossin",company:"La Acting Studio SD",email:"actingcoachsd@gmail.com",phone:"818-521-5337",size:2675,rent:6872,listing:6872,mailbox:"2-14",mailboxCode:"Key",code:"3536",parkingAmt:"2",parkingNums:"17, 18"},
+"202":{floor:2,status:"occupied",name:"Andrew or Benne Kossin",company:"LA Acting Studio SD",email:"actingcoachsd@gmail.com",phone:"818-521-5337",size:2675,rent:6872,listing:6872,mailbox:"2-14",mailboxCode:"Key",code:"3536",parkingAmt:"2",parkingNums:"17, 18"},
 "203":{floor:2,status:"vacant",size:980,rent:null,listing:2100,mailbox:"2-15",mailboxCode:"667",code:"3435",parkingAmt:"0",parkingNums:"-"},
 "204":{floor:2,status:"occupied",name:"Cindy Chen",company:"Haappy Daance",email:"cindy.chen@haappydaance.com",phone:"213-309-7807",size:1200,rent:2100,listing:2250,mailbox:"2-16",mailboxCode:"737",code:"1945",parkingAmt:"0",parkingNums:"-"},
-"206":{floor:2,status:"occupied",name:"Andrew Or Benne Kossin",company:"La Acting Studio SD",email:"actingcoachsd@gmail.com",phone:"818-521-5337",size:1090,rent:0,listing:2290,mailbox:"2-2",mailboxCode:"784",code:"key",parkingAmt:"0",parkingNums:"-"},
+"206":{floor:2,status:"occupied",name:"Andrew or Benne Kossin",company:"LA Acting Studio SD",email:"actingcoachsd@gmail.com",phone:"818-521-5337",size:1090,rent:0,listing:2290,mailbox:"2-2",mailboxCode:"784",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "207":{floor:2,status:"occupied",name:"Bernie Truax",company:"Truax LLC",email:"bernietruax132@gmail.com",phone:"760-842-3188",size:270,rent:655,listing:655,mailbox:"2-3",mailboxCode:"456",code:"2023",parkingAmt:"0",parkingNums:"-"},
-"208":{floor:2,status:"occupied",name:"Erica Robinson & Nobel Buchannon",company:"Kok Auto Sales",email:"ericarob208@gmail.com",phone:"678-662-2155",size:190,rent:800,listing:700,mailbox:"2-4",mailboxCode:"Key",code:"8890",parkingAmt:"1",parkingNums:"51"},
+"208":{floor:2,status:"occupied",name:"Erica Robinson & Nobel Buchannon",company:"KOK Auto Sales",email:"ericarob208@gmail.com",phone:"678-662-2155",size:190,rent:800,listing:700,mailbox:"2-4",mailboxCode:"Key",code:"8890",parkingAmt:"1",parkingNums:"51"},
 "209":{floor:2,status:"occupied",name:"Yevhenii Dobravskyi",company:"The Auto Zen",email:"royalnet.kh@gmail.com",phone:"858-688-7406",size:190,rent:1760,listing:620,mailbox:"2-5",mailboxCode:"Key",code:"Key",parkingAmt:"14",parkingNums:"81, 82, 83, 84, 67, 68, 69, 70, 71, 31, 32, 33, 52, 53"},
 "210":{floor:2,status:"occupied",name:"Darren M. Domilos",company:"Former Worthy",email:"dmdomilos@gmail.com",phone:"858-652-2508",size:160,rent:700,listing:700,mailbox:"2-6",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "211":{floor:2,status:"occupied",name:"Alexander Nimley",company:"Triton Motors LLC",email:"alexnimley@gmail.com",phone:"619-919-8080",size:175,rent:750,listing:650,mailbox:"2-7",mailboxCode:"Key",code:"2324",parkingAmt:"1",parkingNums:"35"},
 "212":{floor:2,status:"occupied",name:"Ali Askandar",company:"Southern California Auto House",email:"southerncalautohouse@gmail.com",phone:"619-571-2202",size:300,rent:2180,listing:680,mailbox:"2-8",mailboxCode:"Key",code:"Key",parkingAmt:"15",parkingNums:"54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 76, 77, 78, 79, 80"},
 "213":{floor:2,status:"vacant",size:198,rent:null,listing:520,mailbox:"3-9",mailboxCode:"242",code:"3334",parkingAmt:"0",parkingNums:"-"},
-"214":{floor:2,status:"occupied",name:"Benny Lewis",company:"Klassik Cars",email:"blewissr@gmail.com",phone:"619-917-2909",size:114,rent:750,listing:650,mailbox:"3-10",mailboxCode:"key",code:"8983",parkingAmt:"1",parkingNums:"50"},
+"214":{floor:2,status:"occupied",name:"Benny Lewis",company:"Klassik Cars",email:"blewissr@gmail.com",phone:"619-917-2909",size:114,rent:750,listing:650,mailbox:"3-10",mailboxCode:"Key",code:"8983",parkingAmt:"1",parkingNums:"50"},
 "215":{floor:2,status:"occupied",name:"Lupita Rivas Alvarez",company:"Work Force LLC",email:"realitycheck41510@gmail.com",phone:"650-213-2386",size:210,rent:700,listing:600,mailbox:"3-11",mailboxCode:"589",code:"9495",parkingAmt:"1",parkingNums:"46"},
-"216":{floor:2,status:"occupied",name:"Juan Colorado Clavijo",company:"Picture CO",email:"amandacoloradophoto@gmail.com",phone:"619-438-4417",size:290,rent:715,listing:715,mailbox:"3-12",mailboxCode:"398",code:"2627",parkingAmt:"0",parkingNums:"-"},
-"217":{floor:2,status:"vacant",size:70,rent:null,listing:500,mailbox:"3-13",mailboxCode:"497",code:"2840",parkingAmt:"0",parkingNums:"-"},
+"216":{floor:2,status:"occupied",name:"Juan Colorado Clavijo",company:"Picture Co",email:"amandacoloradophoto@gmail.com",phone:"619-438-4417",size:290,rent:715,listing:715,mailbox:"3-12",mailboxCode:"398",code:"2627",parkingAmt:"0",parkingNums:"-"},
+"217":{floor:2,status:"vacant",size:70,rent:null,listing:400,mailbox:"3-13",mailboxCode:"497",code:"2840",parkingAmt:"0",parkingNums:"-"},
 "218":{floor:2,status:"occupied",name:"Juan Colorado Clavijo",company:"Picture Co",email:"amandacoloradophoto@gmail.com",phone:"619-438-4418",size:195,rent:590,listing:590,mailbox:"2-14",mailboxCode:"371",code:"9495",parkingAmt:"0",parkingNums:"-"},
 "219":{floor:2,status:"vacant",size:175,rent:null,listing:530,mailbox:"3-15",mailboxCode:"630",code:"2021",parkingAmt:"0",parkingNums:"-"},
-"220":{floor:2,status:"occupied",name:"Dorian Vaknin",company:"Nova Remodeling INC",email:"dorivak12@gmail.com",phone:"858-905-4332",size:300,rent:720,listing:720,mailbox:"3-16",mailboxCode:"218",code:"1412",parkingAmt:"0",parkingNums:"-"},
-"221":{floor:2,status:"vacant",size:160,rent:null,listing:450,mailbox:"4-1",mailboxCode:"530",code:"2022",parkingAmt:"0",parkingNums:"-"},
+"220":{floor:2,status:"occupied",name:"Dorian Vaknin",company:"Nova Remodeling Inc",email:"dorivak12@gmail.com",phone:"858-905-4332",size:300,rent:720,listing:720,mailbox:"3-16",mailboxCode:"218",code:"1412",parkingAmt:"0",parkingNums:"-"},
+"221":{floor:2,status:"vacant",size:160,rent:null,listing:555,mailbox:"4-1",mailboxCode:"530",code:"2022",parkingAmt:"0",parkingNums:"-"},
 "300":{floor:3,status:"vacant",size:2350,rent:null,listing:4850,mailbox:"4-2",mailboxCode:"112",code:"8687",parkingAmt:"0",parkingNums:"-"},
 "301":{floor:3,status:"vacant",size:1000,rent:null,listing:2500,mailbox:"4-3",mailboxCode:"699",code:"5958",parkingAmt:"0",parkingNums:"-"},
 "302":{floor:3,status:"occupied",name:"Armandoo Marte",company:"Lab Mgmt LLC",email:"amarte5711@gmail.com",phone:"619-288-7151",size:1320,rent:2500,listing:2500,mailbox:"4-4",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "304":{floor:3,status:"occupied",name:"Amir Hashemi",company:"1298 Studios",email:"amirhashemi01@gmail.com",phone:"858-366-3494",size:1300,rent:2700,listing:2700,mailbox:"4-6",mailboxCode:"958",code:"4543",parkingAmt:"0",parkingNums:"-"},
-"307":{floor:3,status:"occupied",name:"Kasandra Avila",company:"Zen Zone Welness",email:"kcavila6@gmail.com",phone:"805-509-4163",size:260,rent:645,listing:645,mailbox:"4-10",mailboxCode:"430",code:"2928",parkingAmt:"0",parkingNums:"-"},
+"307":{floor:3,status:"occupied",name:"Kasandra Avila",company:"Zen Zone Wellness",email:"kcavila6@gmail.com",phone:"805-509-4163",size:260,rent:645,listing:645,mailbox:"4-10",mailboxCode:"430",code:"2928",parkingAmt:"0",parkingNums:"-"},
 "308":{floor:3,status:"vacant",size:215,rent:null,listing:620,mailbox:"4-11",mailboxCode:"619",code:"2390",parkingAmt:"0",parkingNums:"-"},
 "309":{floor:3,status:"occupied",name:"Peng Li",company:"A & D Beauty Studio",email:"mumumama615@gmail.com",phone:"707-567-1569",size:210,rent:600,listing:600,mailbox:"4-12",mailboxCode:"189",code:"8831",parkingAmt:"1",parkingNums:"36"},
 "310":{floor:3,status:"vacant",size:180,rent:null,listing:700,mailbox:"4-13",mailboxCode:"069",code:"4527",parkingAmt:"0",parkingNums:"-"},
@@ -833,18 +837,18 @@ const UNITS = {
 "314":{floor:3,status:"occupied",name:"David Love",company:"Love Cars",email:"dlove1947@gmail.com",phone:"619-263-1533",size:110,rent:585,listing:585,mailbox:"5-1",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"49"},
 "315":{floor:3,status:"occupied",name:"Kishi Akhmedov",company:"Fix It Pro Appliance Repair",email:"kihamamu@gmail.com",phone:"619-770-4400",size:108,rent:430,listing:430,mailbox:"5-2",mailboxCode:"417",code:"8227",parkingAmt:"0",parkingNums:"-"},
 "316":{floor:3,status:"occupied",name:"Yonggang Lou",company:"Rykach Inc",email:"louyonggang@gmail.com",phone:"858-977-0105",size:83,rent:400,listing:400,mailbox:"5-3",mailboxCode:"642",code:"5457",parkingAmt:"0",parkingNums:"-"},
-"317":{floor:3,status:"occupied",name:"Abdal-rahman Al-araj",company:"Rai's Auto Collection LLC",email:"info@raisautocollection.com",phone:"714-757-6218",size:135,rent:485,listing:530,mailbox:"5-4",mailboxCode:"285",code:"4845",parkingAmt:"0",parkingNums:"-"},
+"317":{floor:3,status:"occupied",name:"Abdal-Rahman Al-Araj",company:"Rai's Auto Collection LLC",email:"info@raisautocollection.com",phone:"714-757-6218",size:135,rent:485,listing:530,mailbox:"5-4",mailboxCode:"285",code:"4845",parkingAmt:"0",parkingNums:"-"},
 "318":{floor:3,status:"occupied",name:"Yonggang Lou",company:"SBF International Inc",email:"louyonggang@gmail.com",phone:"858-977-0105",size:80,rent:400,listing:400,mailbox:"5-5",mailboxCode:"560",code:"3636",parkingAmt:"0",parkingNums:"-"},
-"319":{floor:3,status:"vacant",size:198,rent:null,listing:740,mailbox:"5-6",mailboxCode:"307",code:"2389",parkingAmt:"0",parkingNums:"-"},
-"320":{floor:3,status:"vacant",size:165,rent:null,listing:515,mailbox:"5-7",mailboxCode:"884",code:"key",parkingAmt:"0",parkingNums:"-"},
+"319":{floor:3,status:"vacant",size:198,rent:null,listing:690,mailbox:"5-6",mailboxCode:"307",code:"2389",parkingAmt:"0",parkingNums:"-"},
+"320":{floor:3,status:"vacant",size:165,rent:null,listing:515,mailbox:"5-7",mailboxCode:"884",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "321":{floor:3,status:"vacant",size:232,rent:null,listing:635,mailbox:"5-8",mailboxCode:"075",code:"4445",parkingAmt:"0",parkingNums:"-"},
 "322":{floor:3,status:"occupied",name:"John D. Heinze",company:"Sai System Technologies",email:"johnburgessdorian@gmail.com",phone:"858-344-8509",size:125,rent:625,listing:625,mailbox:"5-9",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "323":{floor:3,status:"vacant",size:150,rent:null,listing:495,mailbox:"5-10",mailboxCode:"438",code:"3535",parkingAmt:"0",parkingNums:"-"},
 "324":{floor:3,status:"vacant",size:140,rent:null,listing:700,mailbox:"5-11",mailboxCode:"923",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "325":{floor:3,status:"occupied",name:"Linval Howard Jr",company:"Revline Motors LLC",email:"linval.ahoward@gmail.com",phone:"315-832-1337",size:95,rent:500,listing:440,mailbox:"5-12",mailboxCode:"282",code:"4243",parkingAmt:"1",parkingNums:"45"},
-"326":{floor:3,status:"occupied",name:"Damir Subeev",company:"S-auto Grpop",email:"sautogroup324@gmail.com",phone:"858-261-4174",size:105,rent:465,listing:465,mailbox:"5-13",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
+"326":{floor:3,status:"occupied",name:"Damir Subeev",company:"S-Auto Grpop",email:"sautogroup324@gmail.com",phone:"858-261-4174",size:105,rent:465,listing:465,mailbox:"5-13",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "327":{floor:3,status:"occupied",name:"Yonggang Lou",company:"EcoEdge Inc",email:"louyonggang@gmail.com",phone:"858-977-0105",size:80,rent:400,listing:400,mailbox:"5-14",mailboxCode:"464",code:"3945",parkingAmt:"0",parkingNums:"-"},
-"328":{floor:3,status:"occupied",name:"Anton Khomiakov",company:"Siberian Auto Repair",email:"siberianautorepair@gmail.com",phone:"858-380-7006",size:170,rent:585,listing:520,mailbox:"5-15",mailboxCode:"key",code:"key",parkingAmt:"0",parkingNums:"-"},
+"328":{floor:3,status:"occupied",name:"Anton Khomiakov",company:"Siberian Auto Repair",email:"siberianautorepair@gmail.com",phone:"858-380-7006",size:170,rent:585,listing:520,mailbox:"5-15",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "329":{floor:3,status:"occupied",name:"Jordan Gray",company:"Ophelia Medical Group",email:"jordan@ophelia.com",phone:"215-585-2144",size:85,rent:505,listing:505,mailbox:"5-16",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
 "330":{floor:3,status:"occupied",name:"Asher Johnson",company:"Asher Johnson PhD Prof Corp",email:"doctorj@asherjohnsonphd.com",phone:"858-633-6236",size:375,rent:750,listing:790,mailbox:"No mailbox Available",mailboxCode:"N/A",code:"4242",parkingAmt:"0",parkingNums:"-"},
 "Garage (storage)":{floor:null,status:"occupied",name:"Alikhan Gelogaev",company:"Mr Alikhan Car Detailing",email:"a22111956@gmail.com",phone:"917-607-6274",size:1680,rent:2250,listing:2000,mailbox:"No mailbox Available",mailboxCode:"N/A",code:"None",parkingAmt:"0",parkingNums:"-"}
@@ -855,6 +859,9 @@ const money = n => n==null ? "—" : "$"+n.toLocaleString();
 const sqft = n => n==null ? "—" : n.toLocaleString()+" sq ft";
 const codeDisp = c => c ? c : "—";
 const displayPrice = d => (d.status==="occupied" && d.rent!=null) ? d.rent : d.listing;
+const STORAGE_OFFICE = new Set(["105","109","122","320","324","321"]);
+const isNumCode = v => /^\d+$/.test(String(v==null?"":v).trim());
+const hasMailbox = d => !!(d && d.mailbox && d.mailbox!=="—" && d.mailbox!=="-" && !/^no mailbox/i.test(d.mailbox));
 
 // ---------- Color every unit on every floor by status ----------
 function paintUnits(){
@@ -928,11 +935,13 @@ function updateTenantSelectionVisuals(){ updateMapSelectionVisuals(); }
 function renderStats(){
   const all = Object.keys(UNITS);
   const occ = all.filter(u=>UNITS[u].status==="occupied");
-  const vac = all.filter(u=>UNITS[u].status==="vacant");
+  const oth = all.filter(u=>STORAGE_OFFICE.has(u));
+  const vac = all.filter(u=>UNITS[u].status==="vacant" && !STORAGE_OFFICE.has(u));
   document.getElementById('statsRow').innerHTML = `
     <div class="stat-card"><div class="num">${all.length}</div><div class="lbl">Total Units</div></div>
     <div class="stat-card occ"><div class="num">${occ.length}</div><div class="lbl">Occupied</div></div>
     <div class="stat-card vac"><div class="num">${vac.length}</div><div class="lbl">Vacant</div></div>
+    <div class="stat-card oth"><div class="num">${oth.length}</div><div class="lbl">Storage &amp; Office</div></div>
   `;
 }
 renderStats();
@@ -962,7 +971,7 @@ function showDetail(u){
     rows += `<tr><td class="k">Tenant email</td><td class="v"><a href="mailto:${d.email}">${d.email||"—"}</a></td></tr>`;
     rows += `<tr><td class="k">Tenant phone</td><td class="v">${d.phone||"—"}</td></tr>`;
   }
-  rows += `<tr><td class="k">Floor</td><td class="v">${d.floor}</td></tr>`;
+  rows += `<tr><td class="k">Floor</td><td class="v">${typeof d.floor==='number'?d.floor:'Parking lot'}</td></tr>`;
   rows += `<tr><td class="k">Size</td><td class="v">${sqft(d.size)}</td></tr>`;
   rows += `<tr><td class="k">Rent</td><td class="v">${d.rent==null?"—":money(d.rent)+"/mo"}</td></tr>`;
   rows += `<tr><td class="k">Listing price</td><td class="v">${d.listing==null?"—":money(d.listing)}</td></tr>`;
@@ -1081,7 +1090,8 @@ let showOnlySelected = false;
 
 function unitList(){
   let list = Object.keys(UNITS);
-  if(currentTab==="vacant") list = list.filter(u=>UNITS[u].status==="vacant");
+  if(currentTab==="vacant") list = list.filter(u=>UNITS[u].status==="vacant" && !STORAGE_OFFICE.has(u));
+  if(currentTab==="storage") list = list.filter(u=>STORAGE_OFFICE.has(u));
   if(currentTab==="occupied") list = list.filter(u=>UNITS[u].status==="occupied");
   if(showOnlySelected) list = list.filter(u=>selected.has(u));
   if(sortMode==="az") list.sort((a,b)=> a.localeCompare(b,undefined,{numeric:true}));
@@ -1219,7 +1229,8 @@ function generateMessage(){
   const blocks = units.map(u=>{
     const d = UNITS[u];
     const price = displayPrice(d);
-    return `Unit ${u}\nSize: ${d.size==null?"—":d.size} sq. ft.\nRent: ${price==null?"—":"$"+price.toLocaleString()}/month\nDoor Code: ${d.code||"—"}`;
+    const access = isNumCode(d.code) ? `Door Code: ${d.code}` : `Access: by key — please contact us to arrange your tour`;
+    return `Unit ${u}\nSize: ${d.size==null?"—":d.size} sq. ft.\nRent: ${price==null?"—":"$"+price.toLocaleString()}/month\n${access}`;
   }).join("\n\n");
 
   return `Hey, welcome to 6920 Miramar Road! \u{1F44B}
@@ -1339,28 +1350,30 @@ function generateWelcomeMessage(){
   if(units.length === 0) return "";
   const firstUnit = UNITS[units[0]];
   const firstName = (firstUnit && firstUnit.name) ? firstUnit.name.split(" ")[0] : "there";
+  const single = units.length === 1;
 
   const unitBlocks = units.map(u=>{
-    const d = UNITS[u];
-    const doorCode = (d && d.code) ? d.code : "—";
-    const mailboxLoc = (d && d.mailbox) ? d.mailbox : "—";
-    const mailboxCode = (d && d.mailboxCode) ? d.mailboxCode : "—";
-    return `Unit ${u}:
-To enter, your code is ${doorCode} \u2611\uFE0F
-Your mailbox is ${mailboxLoc} and your code is ${mailboxCode}`;
+    const d = UNITS[u] || {};
+    const lines = [];
+    if(!single) lines.push(`Unit ${u}:`);
+    if(isNumCode(d.code)) lines.push(`To enter, your code is ${d.code} \u2611\uFE0F`);
+    else if(!/^none$/i.test(String(d.code||""))) lines.push(`To enter, use your key \u2611\uFE0F`);
+    if(!hasMailbox(d)) lines.push(`This unit does not have a mailbox.`);
+    else if(isNumCode(d.mailboxCode)) lines.push(`Your mailbox is ${d.mailbox} and your code is ${d.mailboxCode}`);
+    else lines.push(`Your mailbox is ${d.mailbox} and it opens with a key`);
+    return lines.join("\n");
   }).join("\n\n");
 
-  const unitLine = units.length === 1 ? `Your unit number is ${units[0]}` : `Your unit numbers are ${units.join(", ")}`;
+  const unitLine = single ? `Your unit number is ${units[0]}` : `Your unit numbers are ${units.join(", ")}`;
+  const mailboxNote = units.some(u=>hasMailbox(UNITS[u])) ? `Your mailbox is located across the street from Better Buzz Coffee.\n\n` : ``;
 
-  return `Hi ${firstName}, here are the details for your unit${units.length>1?'s':''}:
+  return `Hi ${firstName}, here are the details for your unit${single?'':'s'}:
 
 ${unitLine}
 
 ${unitBlocks}
 
-Your mailbox is located across the street from Better Buzz Coffee.
-
-The common trash is located by the parking lot, next to parking space 24.
+${mailboxNote}The common trash is located by the parking lot, next to parking space 24.
 
 If you have any requests, please use the DoorLoop portal and we will answer promptly \u{1F60A}
 
