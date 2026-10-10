@@ -795,7 +795,7 @@
 
 <script>
 const UNITS = {
-"100":{floor:1,status:"vacant",size:780,rent:null,listing:1640,mailbox:"1-7",mailboxCode:"839",code:"0532",parkingAmt:"0",parkingNums:"-"},
+"100":{floor:1,status:"occupied",name:"Joncarlo Guzman",company:"",email:"guzmanjoncarlo18@gmail.com",phone:"805-509-4668",size:780,rent:1640,listing:1640,mailbox:"1-7",mailboxCode:"839",code:"0532",parkingAmt:"0",parkingNums:"-"},
 "101":{floor:1,status:"occupied",name:"William Yen",company:"Deltek Corporation",email:"wyen@pacbell.net",phone:"858-361-8024",size:705,rent:900,listing:900,mailbox:"1-8",mailboxCode:"Key",code:"0302",parkingAmt:"0",parkingNums:"-"},
 "102":{floor:1,status:"occupied",name:"Artur Novruzov & Alex Federov",company:"Mikail Auto Sales",email:"mikailautos@gmail.com",phone:"619-882-0815",size:180,rent:1330,listing:620,mailbox:"1-9",mailboxCode:"Key",code:"1007",parkingAmt:"7",parkingNums:"14, 15, 16, 26, 27, 28, 29"},
 "103":{floor:1,status:"occupied",name:"Wei Cui",company:"Aroma Rest Spa",email:"cuiwei19730508@gmail.com",phone:"858-262-9268",size:1050,rent:2650,listing:2250,mailbox:"1-10",mailboxCode:"Key",code:"Key",parkingAmt:"4",parkingNums:"37, 38, 39, 40"},
@@ -841,14 +841,14 @@ const UNITS = {
 "300":{floor:3,status:"vacant",size:2350,rent:null,listing:4850,mailbox:"4-2",mailboxCode:"112",code:"8687",parkingAmt:"0",parkingNums:"-"},
 "301":{floor:3,status:"vacant",size:1000,rent:null,listing:2500,mailbox:"4-3",mailboxCode:"699",code:"5958",parkingAmt:"0",parkingNums:"-"},
 "302":{floor:3,status:"occupied",name:"Armandoo Marte",company:"Lab Mgmt LLC",email:"amarte5711@gmail.com",phone:"619-288-7151",size:1320,rent:2500,listing:2500,mailbox:"4-4",mailboxCode:"Key",code:"Key",parkingAmt:"0",parkingNums:"-"},
-"304":{floor:3,status:"occupied",name:"Amir Hashemi",company:"1298 Studios",email:"amirhashemi01@gmail.com",phone:"858-366-3494",size:1300,rent:2700,listing:2700,mailbox:"4-6",mailboxCode:"958",code:"4543",parkingAmt:"0",parkingNums:"-"},
+"304":{floor:3,status:"occupied",name:"Amir Hashemi",company:"1298 Studios Music + Media",email:"amirhashemi01@gmail.com",phone:"858-366-3494",size:1300,rent:2700,listing:2700,mailbox:"4-6",mailboxCode:"958",code:"4543",parkingAmt:"0",parkingNums:"-"},
 "307":{floor:3,status:"occupied",name:"Kasandra Avila",company:"Zen Zone Wellness",email:"kcavila6@gmail.com",phone:"805-509-4163",size:260,rent:645,listing:645,mailbox:"4-10",mailboxCode:"430",code:"2928",parkingAmt:"0",parkingNums:"-"},
-"308":{floor:3,status:"occupied",name:"Mohammad Shafiq Mashal",company:"Iconic Driving Academy LLC",email:"—",phone:"619-664-8498",size:215,rent:670,listing:620,mailbox:"4-11",mailboxCode:"619",code:"2390",parkingAmt:"0",parkingNums:"-"},
+"308":{floor:3,status:"occupied",name:"Mohammad Shafiq Mashal",company:"Iconic Driving Academy LLC",email:"info@iconicdrivingacademy.com",phone:"619-664-8498",size:215,rent:670,listing:620,mailbox:"4-11",mailboxCode:"619",code:"2390",parkingAmt:"0",parkingNums:"-"},
 "309":{floor:3,status:"occupied",name:"Peng Li",company:"A & D Beauty Studio",email:"mumumama615@gmail.com",phone:"707-567-1569",size:210,rent:600,listing:600,mailbox:"4-12",mailboxCode:"189",code:"8831",parkingAmt:"1",parkingNums:"36"},
 "310":{floor:3,status:"vacant",size:180,rent:null,listing:700,mailbox:"4-13",mailboxCode:"069",code:"4527",parkingAmt:"0",parkingNums:"-"},
 "311":{floor:3,status:"vacant",size:175,rent:null,listing:530,mailbox:"4-14",mailboxCode:"812",code:"2745",parkingAmt:"0",parkingNums:"-"},
 "312":{floor:3,status:"occupied",name:"Linlin Yang",company:"Timenergy LLC",email:"sales.us@relish.fit",phone:"858-305-3128",size:60,rent:360,listing:360,mailbox:"4-15",mailboxCode:"675",code:"8374",parkingAmt:"0",parkingNums:"-"},
-"313":{floor:3,status:"vacant",size:150,rent:null,listing:615,mailbox:"4-16",mailboxCode:"424",code:"7384",parkingAmt:"0",parkingNums:"-"},
+"313":{floor:3,status:"occupied",name:"Marvin Toma",company:"Goatbidz",email:"marvintoma10@yahoo.com",phone:"619-966-7155",size:150,rent:615,listing:615,mailbox:"4-16",mailboxCode:"424",code:"7384",parkingAmt:"0",parkingNums:"-"},
 "314":{floor:3,status:"occupied",name:"David Love",company:"Love Cars",email:"dlove1947@gmail.com",phone:"619-263-1533",size:110,rent:585,listing:585,mailbox:"5-1",mailboxCode:"Key",code:"Key",parkingAmt:"1",parkingNums:"49"},
 "315":{floor:3,status:"occupied",name:"Kishi Akhmedov",company:"Fix It Pro Appliance Repair",email:"kihamamu@gmail.com",phone:"619-770-4400",size:108,rent:430,listing:430,mailbox:"5-2",mailboxCode:"417",code:"8227",parkingAmt:"0",parkingNums:"-"},
 "316":{floor:3,status:"occupied",name:"Yonggang Lou",company:"Rykach Inc",email:"louyonggang@gmail.com",phone:"858-977-0105",size:83,rent:400,listing:400,mailbox:"5-3",mailboxCode:"642",code:"5457",parkingAmt:"0",parkingNums:"-"},
@@ -1037,21 +1037,29 @@ function closeDetail(){
 function showMultiSelection(){
   const panel = document.getElementById('detail-panel');
   panel.classList.remove('empty');
-  const list = Array.from(selected).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const isTenantMode = tenantSelected.size > 0;
+  const set = isTenantMode ? tenantSelected : selected;
+  const list = Array.from(set).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const label = isTenantMode ? "Send to Tenant" : "Send to Prospect";
+  const btnClass = isTenantMode ? "tenant-btn" : "prospect-btn";
   panel.innerHTML = `<div class="dp-head">
       <div class="dp-title">${list.length} Units Toggled</div>
       <div style="display:flex;align-items:center;gap:10px;">
         <button id="clearToggleBtn" class="chip" style="white-space:nowrap;">Clear</button>
-        <button id="mapSendBtn" class="chip" style="background:var(--text-accent);color:#fff;border-color:var(--text-accent);white-space:nowrap;">Send to Prospect</button>
+        <button id="mapSendBtn" class="chip ${btnClass}" style="white-space:nowrap;">${label}</button>
         <button id="closeDetailBtn" aria-label="Close" style="appearance:none;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-secondary);padding:0 2px;">&times;</button>
       </div>
     </div>
     <p style="margin:8px 0 0;font-size:13.5px;color:var(--text-secondary);">${list.join(", ")}</p>`;
   document.getElementById('closeDetailBtn').addEventListener('click', closeDetail);
-  document.getElementById('mapSendBtn').addEventListener('click', openModal);
+  document.getElementById('mapSendBtn').addEventListener('click', ()=>{
+    if(isTenantMode) openWelcomeModalForUnit(list[0]); else openModal();
+  });
   document.getElementById('clearToggleBtn').addEventListener('click', ()=>{
     selected.clear();
+    tenantSelected.clear();
     updateSelectionUI();
+    updateTenantSelectionVisuals();
     closeDetail();
   });
   panel.scrollIntoView({behavior:"smooth", block:"start"});
@@ -1069,10 +1077,12 @@ document.querySelectorAll('.unit').forEach(el=>{
       }
       if(wasSelected) selected.delete(u); else selected.add(u);
       updateSelectionUI();
-      if(wasSelected){
+      if(selected.size === 0){
         closeDetail();
-      } else {
+      } else if(selected.size === 1){
         showDetail(u);
+      } else {
+        showMultiSelection();
       }
       return;
     }
@@ -1084,10 +1094,12 @@ document.querySelectorAll('.unit').forEach(el=>{
       }
       if(wasSelected) tenantSelected.delete(u); else tenantSelected.add(u);
       updateTenantSelectionVisuals();
-      if(wasSelected){
+      if(tenantSelected.size === 0){
         closeDetail();
-      } else {
+      } else if(tenantSelected.size === 1){
         showDetail(u);
+      } else {
+        showMultiSelection();
       }
       return;
     }
@@ -1423,8 +1435,8 @@ function openWelcomeModalForUnit(u){
   if(first && first.status==="occupied" && first.name){
     document.getElementById('welcomeFirstName').value = first.name.split(" ")[0];
     document.getElementById('welcomeSummaryLine').textContent = displayUnits.length > 1
-      ? `Units ${displayUnits.join(", ")} — ${first.name} (${first.company})`
-      : `Unit ${displayUnits[0]} — ${first.name} (${first.company})`;
+      ? `Units ${displayUnits.join(", ")} — ${first.name}${first.company ? " ("+first.company+")" : ""}`
+      : `Unit ${displayUnits[0]} — ${first.name}${first.company ? " ("+first.company+")" : ""}`;
   } else {
     document.getElementById('welcomeFirstName').value = "";
     document.getElementById('welcomeSummaryLine').textContent = `Unit ${displayUnits[0]}`;
